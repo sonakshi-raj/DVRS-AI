@@ -1,1 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+venv/
+ai/venv/
+
+# Env files
 .env
+
+# OS junk
+.DS_Store
