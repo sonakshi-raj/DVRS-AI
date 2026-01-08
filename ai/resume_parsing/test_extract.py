@@ -1,7 +1,10 @@
 import os
 import json
 from pathlib import Path
-
+from .extract_text import extract_text
+from .clean_text import clean_text
+from .llm_extract import extract_structured_resume
+from .hf_llm import HuggingFaceLLM   
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ENV_PATH = PROJECT_ROOT / ".env"
@@ -12,12 +15,6 @@ for line in ENV_PATH.read_text().splitlines():
     if "=" in line:
         k, v = line.split("=", 1)
         os.environ[k] = v
-
-from extract_text import extract_text
-from clean_text import clean_text
-from llm_extract import extract_structured_resume
-from hf_llm import HuggingFaceLLM   
-
 
 def main():
     resume_path = Path(__file__).parent / "test_resume.pdf"
