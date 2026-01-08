@@ -6,6 +6,9 @@ __pycache__/
 venv/
 ai/venv/
 
+.pytest_cache/
+
+
 # Env files
 .env
 
