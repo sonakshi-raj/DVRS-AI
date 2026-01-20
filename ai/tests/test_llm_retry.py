@@ -1,4 +1,4 @@
-from resume_parsing.llm_extract import extract_structured_resume
+from resume_parsing.llm.llm_extract import extract_structured_resume
 
 class FakeResp:
     def __init__(self, content):

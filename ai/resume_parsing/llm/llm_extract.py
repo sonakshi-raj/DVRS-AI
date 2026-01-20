@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from pydantic import ValidationError
-from .schema import ResumeSchema
+from resume_parsing.schema.resume_schema import ResumeSchema
 
 def load_prompt() -> str:
     prompt_path = Path(__file__).resolve().parents[0] / "prompts" / "resume_extraction.txt"
@@ -38,7 +38,26 @@ def _parse_and_validate_response(resp) -> ResumeSchema:
     except ValidationError as exc:
         raise ValueError("JSON does not match ResumeSchema") from exc
 
+def looks_like_resume(text: str) -> bool:
+    keywords = [
+        "experience",
+        "education",
+        "skills",
+        "projects",
+        "work experience",
+        "internship",
+        "technical skills",
+    ]
+    t = text.lower()
+    return any(k in t for k in keywords)
+
 def extract_structured_resume(llm, cleaned_text: str) -> ResumeSchema:
+    if not looks_like_resume(cleaned_text):
+        raise ValueError(
+            "Input document does not appear to be a resume. "
+            "Resume parsing aborted."
+        )
+    
     schema_json = ResumeSchema.model_json_schema()
     prompt = build_prompt(cleaned_text, json.dumps(schema_json, indent=2))
 
