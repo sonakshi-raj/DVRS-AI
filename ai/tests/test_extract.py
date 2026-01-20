@@ -17,23 +17,23 @@ for line in ENV_PATH.read_text().splitlines():
         os.environ[k] = v
 
 def main():
-    resume_path = Path(__file__).parent / "testresume3.pdf"
+    resume_path = Path(__file__).parent / "test_resume.pdf"
     assert resume_path.exists(), f"Resume not found at {resume_path}"
 
     raw = extract_text(resume_path)
-    # print("\n=== RAW ===\n", raw[:400])
+    print("\n=== RAW ===\n", raw[:400])
 
     cleaned = clean_text(raw)
-    # print("\n=== CLEANED ===\n", cleaned[:400])
+    print("\n=== CLEANED ===\n", cleaned[:400])
 
-    print("\n=== RAW ===\n", raw)
-    print("\n=== CLEANED ===\n", cleaned)
+    # print("\n=== RAW ===\n", raw)
+    # print("\n=== CLEANED ===\n", cleaned)
 
-    # llm = HuggingFaceLLM()
-    # structured = extract_structured_resume(llm, cleaned)
+    llm = HuggingFaceLLM()
+    structured = extract_structured_resume(llm, cleaned)
 
-    # print("\n=== STRUCTURED ===\n")
-    # print(json.dumps(structured.model_dump(), indent=2))
+    print("\n=== STRUCTURED ===\n")
+    print(json.dumps(structured.model_dump(), indent=2))
 
 
 if __name__ == "__main__":
