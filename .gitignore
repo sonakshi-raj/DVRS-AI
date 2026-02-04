@@ -7,6 +7,17 @@ venv/
 ai/venv/
 
 .pytest_cache/
+# Angular frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/out-tsc/
+
+
+# Logs
+*.log
+
+Thumbs.db
 
 
 # Env files

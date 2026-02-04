@@ -1,0 +1,148 @@
+.home-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a, #020617);
+  padding: 2.5rem;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
+
+/* HEADER */
+.top-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.top-header h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.top-header h1 span {
+  color: #6366f1;
+}
+
+.top-header p {
+  font-size: 1.05rem;
+  color: #cbd5f5;
+}
+
+.logout-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #ef4444;
+  border: none;
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: transform 0.2s ease;
+}
+
+.logout-btn:hover {
+  transform: scale(1.05);
+}
+
+/* UPLOAD SECTION */
+.upload-section {
+  max-width: 720px;
+  margin: auto;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2.5rem;
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+  text-align: center;
+}
+
+.upload-section h2 {
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.upload-section p {
+  color: #c7d2fe;
+  font-size: 0.9rem;
+  margin-bottom: 1.8rem;
+}
+
+/* DROP ZONE */
+.upload-box {
+  border: 2px dashed #6366f1;
+  border-radius: 18px;
+  padding: 3rem 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.upload-box:hover {
+  background: rgba(99, 102, 241, 0.08);
+  transform: translateY(-4px);
+}
+
+.upload-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.upload-box h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.upload-box p {
+  margin: 0.6rem 0;
+  color: #a5b4fc;
+}
+
+/* BUTTONS */
+.browse-btn {
+  background: transparent;
+  border: 2px solid #6366f1;
+  color: #6366f1;
+  padding: 0.55rem 1.4rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.browse-btn:hover {
+  background: #6366f1;
+  color: white;
+}
+
+.actions {
+  margin-top: 2.5rem;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  border: none;
+  padding: 0.9rem 2.4rem;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.25s ease;
+}
+
+.primary-btn:hover {
+  transform: scale(1.05);
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .top-header h1 {
+    font-size: 2.1rem;
+  }
+
+  .upload-section {
+    padding: 1.8rem;
+  }
+}

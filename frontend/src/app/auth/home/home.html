@@ -1,0 +1,54 @@
+<div class="home-wrapper">
+
+  <!-- HEADER -->
+  <div class="top-header">
+    <h1>Welcome to <span>DVRS</span></h1>
+    <p>AI-Powered Interview & Resume Evaluation System</p>
+
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
+
+  <!-- UPLOAD SECTION -->
+  <div class="upload-section">
+    <h2>Upload Your Resume</h2>
+    <p>Supported formats: PDF, DOCX (Max 2MB)</p>
+
+    <!-- UPLOAD BOX -->
+    <div class="upload-box" (click)="fileInput.click()">
+      <div class="upload-icon">📄</div>
+      <h3>Drag & Drop your resume here</h3>
+      <p>or</p>
+
+      <!-- SAME BUTTON, NOW FUNCTIONAL -->
+      <button type="button" class="browse-btn">
+        Browse File
+      </button>
+
+      <!-- REQUIRED HIDDEN INPUT (NO UI CHANGE) -->
+      <input
+        type="file"
+        #fileInput
+        hidden
+        accept=".pdf,.doc,.docx"
+        (change)="onFileSelected($event)"
+      />
+    </div>
+
+    <!-- FILE PREVIEW (ONLY SHOWS AFTER UPLOAD) -->
+    <div *ngIf="selectedFile" class="preview">
+      <p><strong>Selected file:</strong> {{ selectedFile.name }}</p>
+    </div>
+
+    <!-- ACTION BUTTON -->
+    <div class="actions">
+      <button
+        class="primary-btn"
+        [disabled]="!selectedFile"
+        (click)="startInterview()"
+      >
+        Start Interview
+      </button>
+    </div>
+  </div>
+
+</div>
