@@ -85,7 +85,7 @@ app.post("/api/logout", (req, res)=>{
     res.clearCookie("token", {httpOnly: true, secure: false, sameSite: "lax"});
     return res.status(200).json({status:"Success", msg:"Logged out successfully"});
 });
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 app.use("/uploads", express.static("uploads"));
 app.use("/api/resume", resumeRoutes);
 app.listen(PORT, () => console.log(`Server running on ${PORT}`)); 

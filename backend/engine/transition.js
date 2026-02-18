@@ -1,4 +1,4 @@
-import STATES from "./states";
+import STATES from "./states.js";
 
 class tranistionManager{
     constructor(){

@@ -1,5 +1,5 @@
-import STATES from "./states";
-import tranistionManager from "./transition";
+import STATES from "./states.js";
+import tranistionManager from "./transition.js";
 
 class interviewEngine{
     constructor(){
