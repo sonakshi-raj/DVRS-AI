@@ -43,10 +43,11 @@
     <div class="actions">
       <button
         class="primary-btn"
-        [disabled]="!selectedFile"
+        [disabled]="!selectedFile || isUploading"
         (click)="startInterview()"
       >
-        Start Interview
+        <span *ngIf="!isUploading">Start Interview</span>
+        <span *ngIf="isUploading">Creating Session...</span>
       </button>
     </div>
   </div>

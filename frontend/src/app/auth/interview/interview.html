@@ -1,15 +1,61 @@
 <div class="interview-container">
-  <div class="question-card">
-    <h3>Question 1 of 5</h3>
+  <!-- LOADING STATE -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading interview session...</p>
+  </div>
 
-    <p class="question">
-      Tell us about a challenging project you worked on.
-    </p>
+  <!-- ERROR STATE -->
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+    <br><br>
+    <button class="btn-primary" routerLink="/home">Go to Home</button>
+  </div>
 
-    <textarea placeholder="Type your answer here..."></textarea>
+  <!-- INTERVIEW CONTENT -->
+  <div *ngIf="showContent">
+    <!-- PROGRESS HEADER -->
+    <div class="progress-header">
+      <div class="progress-bar-container">
+        <div class="progress-bar" [style.width.%]="progressPercentage"></div>
+      </div>
+      <p class="progress-text">Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}</p>
+      <p class="progress-text">Status: {{ session?.status }}</p>
+    </div>
 
-    <button class="btn-primary" routerLink="/dashboard">
-      Submit Answer
-    </button>
+    <!-- QUESTION CARD -->
+    <div class="question-card">
+      <h3>Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}</h3>
+
+      <p class="question">
+        {{ currentQuestion }}
+      </p>
+
+      <textarea 
+        [(ngModel)]="currentAnswer"
+        placeholder="Type your answer here..."
+        maxlength="1000"
+        [disabled]="submitting"
+      ></textarea>
+
+      <div class="char-count">
+        {{ currentAnswer.length }} / 1000 characters
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-secondary" routerLink="/home" [disabled]="submitting">
+          Exit Interview
+        </button>
+        
+        <button 
+          class="btn-primary" 
+          (click)="submitAnswer()"
+          [disabled]="submitting || !currentAnswer.trim()"
+        >
+          <span *ngIf="!submitting">{{ isLastQuestion ? 'Complete Interview' : 'Submit & Next' }}</span>
+          <span *ngIf="submitting">Saving...</span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>

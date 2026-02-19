@@ -45,6 +45,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../service/auth-service';
+import { InterviewService } from '../../service/interview.service';
 
 @Component({
   selector: 'app-home',
@@ -56,12 +57,14 @@ import { AuthService } from '../../service/auth-service';
 export class Home {
 
   user: any = null;
-  selectedFile: File | null = null;   // ✅ REQUIRED
+  selectedFile: File | null = null;
+  isUploading: boolean = false;
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private interviewService: InterviewService
   ) {}
 
   ngOnInit() {
@@ -86,29 +89,55 @@ export class Home {
     }
   }
 
-  // ✅ REQUIRED
-startInterview() {
-  if (!this.selectedFile) {
-    alert('Please upload a resume first');
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append('resume', this.selectedFile);
-
-  this.http.post(
-    'http://localhost:5002/api/resume/upload',
-    formData,
-    { withCredentials: true }
-  ).subscribe({
-    next: () => {
-      this.router.navigate(['/interview']);
-    },
-    error: (err) => {
-      console.error('Upload failed', err);
+  startInterview() {
+    if (!this.selectedFile) {
+      alert('Please upload a resume first');
+      return;
     }
-  });
-}
+
+    this.isUploading = true;
+    const formData = new FormData();
+    formData.append('resume', this.selectedFile);
+
+    // Step 1: Upload resume
+    this.http.post<any>(
+      'http://localhost:5002/api/resume/upload',
+      formData,
+      { withCredentials: true }
+    ).subscribe({
+      next: (uploadResponse) => {
+        console.log('Resume uploaded successfully', uploadResponse);
+        
+        // Step 2: Create interview session with uploaded resume filename
+        const sessionData = {
+          resumeId: uploadResponse.file
+        };
+
+        this.interviewService.createSession(sessionData).subscribe({
+          next: (sessionResponse) => {
+            this.isUploading = false;
+            if (sessionResponse.success && sessionResponse.data) {
+              console.log('Session created', sessionResponse.data);
+              // Navigate to interview page with session ID
+              this.router.navigate(['/interview'], {
+                queryParams: { sessionId: sessionResponse.data._id }
+              });
+            }
+          },
+          error: (err) => {
+            this.isUploading = false;
+            console.error('Failed to create session', err);
+            alert('Failed to create interview session. Please try again.');
+          }
+        });
+      },
+      error: (err) => {
+        this.isUploading = false;
+        console.error('Upload failed', err);
+        alert('Failed to upload resume. Please try again.');
+      }
+    });
+  }
 
 
   logout() {

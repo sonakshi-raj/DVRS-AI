@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import User from "./models/User.js";
 import resumeRoutes from "./routes/resume.js";
+import interviewRoutes from "./routes/interview.js";
 import path from "path";
 import bcrypt from "bcryptjs";
 import cors from "cors";
@@ -88,4 +89,5 @@ app.post("/api/logout", (req, res)=>{
 const PORT = process.env.PORT;
 app.use("/uploads", express.static("uploads"));
 app.use("/api/resume", resumeRoutes);
+app.use("/api/interview", interviewRoutes);
 app.listen(PORT, () => console.log(`Server running on ${PORT}`)); 
