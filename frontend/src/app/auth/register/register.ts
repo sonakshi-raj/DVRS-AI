@@ -24,15 +24,20 @@ export class Register {
   }
   onSubmit() {
     console.log(this.registerForm.value);
+    if (this.registerForm.invalid) {
+      return;
+    }
     this.authService.register(this.registerForm.value).subscribe({
       next: (res) => {
         console.log("Registration successful", res);
+        this.router.navigate(['/login']);
       },
       error: (err) => {
         console.error("Registration failed", err);
       }
     });
   }
+
   goToLogin() {
   this.router.navigate(['/login']);
   }
