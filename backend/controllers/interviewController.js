@@ -1,5 +1,8 @@
 import InterviewSession from '../models/InterviewSession.js';
 
+import InterviewEngine from "../engine/interviewEngine.js";
+
+
 // @desc    Create a new interview session
 // @route   POST /api/interview/session
 // @access  Private
@@ -222,12 +225,31 @@ const addQuestionAnswer = async (req, res) => {
     }
 
     session.questions.push({ question, answer });
-    await session.save();
 
-    res.json({
-      success: true,
-      data: session
-    });
+/* ===== INTERVIEW ENGINE LOGIC ===== */
+const engine = new InterviewEngine();
+
+// temporary scoring logic (later AI will send score)
+let score = 5; 
+let signal = "AVERAGE";
+
+if (score >= 8) signal = "GOOD";
+if (score <= 4) signal = "BAD";
+
+// get next interview state
+const nextState = engine.process(signal);
+
+// save state in DB
+session.currentState = nextState;
+
+await session.save();
+
+res.json({
+  success: true,
+  nextState: nextState,
+  data: session
+});
+
   } catch (error) {
     res.status(500).json({
       success: false,
