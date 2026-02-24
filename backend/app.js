@@ -17,11 +17,11 @@ app.use(cors({origin: 'http://localhost:4200', credentials: true}));
 app.use(express.json());
 app.use(cookieParser());
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/LoginApp";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/LoginApp";
 const JWT_SECRET = process.env.JWT_SECRET;
 // Connect to MongoDB
-mongoose.connect(MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log("MongoDB connected to:", mongoose.connection.db.databaseName))
   .catch(err => console.error("MongoDB connection error:", err));
 //Register API
 app.post("/api/register", async(req, res)=>{

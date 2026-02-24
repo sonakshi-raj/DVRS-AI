@@ -7,6 +7,10 @@ class tranistionManager{
     }
     nextState(currentState, signal){
 
+        // Check for time_up signal first (overrides all other logic)
+        if (signal === "time_up" || signal === "TIME_UP")
+            return STATES.CLOSING;
+
         if (currentState === STATES.INTRO)
             return STATES.RESUME_QUESTION;
 

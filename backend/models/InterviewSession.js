@@ -21,8 +21,12 @@ const interviewSessionSchema = new mongoose.Schema({
   },
   currentState: {
     type: String,
-    enum: ['introduction', 'resume-based', 'follow-up', 'deep-dive', 'closing'],
+    enum: ['introduction', 'resume-based', 'follow-up', 'deep-dive', 'closing', 'end'],
     default: 'introduction'
+  },
+  stateCounters: {
+    followups: { type: Number, default: 0 },
+    deepdives: { type: Number, default: 0 }
   },
   questions: [{
     question: String,

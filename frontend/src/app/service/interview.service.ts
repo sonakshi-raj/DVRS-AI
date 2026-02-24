@@ -51,6 +51,7 @@ export class InterviewService {
 
   // Get all interview sessions for logged-in user
   getSessions(): Observable<ApiResponse<InterviewSession[]>> {
+    console.log('InterviewService: Fetching sessions from', `${this.baseUrl}/sessions`);
     return this.http.get<ApiResponse<InterviewSession[]>>(
       `${this.baseUrl}/sessions`,
       { withCredentials: true }

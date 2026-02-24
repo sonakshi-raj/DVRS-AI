@@ -1,10 +1,10 @@
 const STATES = {
-    INTRO: 'INTRO',
-    RESUME_QUESTION: 'RESUME QUESTION',
-    FOLLOW_UP: 'FOLLOW UP',
-    DEEP_DIVE: 'DEEP DIVE',
-    CLOSING: 'CLOSING',
-    END: 'END'
+    INTRO: 'introduction',
+    RESUME_QUESTION: 'resume-based',
+    FOLLOW_UP: 'follow-up',
+    DEEP_DIVE: 'deep-dive',
+    CLOSING: 'closing',
+    END: 'end'
 };
 
 export default STATES;

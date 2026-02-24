@@ -229,6 +229,11 @@ const addQuestionAnswer = async (req, res) => {
 /* ===== INTERVIEW ENGINE LOGIC ===== */
 const engine = new InterviewEngine();
 
+// Restore engine state from session (important for state continuity)
+engine.state = session.currentState;
+engine.tranistion.followups = session.stateCounters?.followups || 0;
+engine.tranistion.deepdives = session.stateCounters?.deepdives || 0;
+
 // temporary scoring logic (later AI will send score)
 let score = 5; 
 let signal = "AVERAGE";
@@ -236,11 +241,15 @@ let signal = "AVERAGE";
 if (score >= 8) signal = "GOOD";
 if (score <= 4) signal = "BAD";
 
-// get next interview state
+// get next interview state based on current state and answer quality
 const nextState = engine.process(signal);
 
-// save state in DB
+// save state and counters back to DB
 session.currentState = nextState;
+session.stateCounters = {
+  followups: engine.tranistion.followups,
+  deepdives: engine.tranistion.deepdives
+};
 
 await session.save();
 
