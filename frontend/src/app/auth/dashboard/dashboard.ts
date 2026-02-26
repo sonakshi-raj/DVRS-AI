@@ -49,21 +49,15 @@ export class Dashboard implements OnInit {
 
   loadSessions(): void {
     this.loading = true;
-    console.log('Dashboard: Loading sessions...');
     
     this.interviewService.getSessions().subscribe({
       next: (response) => {
-        console.log('Dashboard: Received response', response);
         try {
           if (response.success && response.data) {
-            console.log('Dashboard: Setting sessions array, length =', response.data.length);
             this.sessions = response.data;
-            console.log('Dashboard: Calling calculateStatistics...');
             this.calculateStatistics();
-            console.log('Dashboard: Statistics calculated, setting loading = false');
             this.loading = false;
-            this.cdr.detectChanges(); // Manually trigger change detection
-            console.log('Dashboard: Loading complete!');
+            this.cdr.detectChanges();
           } else {
             console.error('Dashboard: Invalid response structure', response);
             this.error = 'Invalid response from server';
@@ -87,16 +81,11 @@ export class Dashboard implements OnInit {
   }
 
   calculateStatistics(): void {
-    console.log('calculateStatistics: Starting...');
     this.totalInterviews = this.sessions.length;
-    console.log('calculateStatistics: totalInterviews =', this.totalInterviews);
-    
     this.completedInterviews = this.sessions.filter(s => s.status === 'completed').length;
-    console.log('calculateStatistics: completedInterviews =', this.completedInterviews);
     
     // Get latest session (first one since they're sorted by createdAt desc)
     this.latestSession = this.sessions.length > 0 ? this.sessions[0] : null;
-    console.log('calculateStatistics: latestSession =', this.latestSession?._id);
     
     // Calculate average score from completed interviews
     const completedSessions = this.sessions.filter(s => s.status === 'completed');
@@ -104,8 +93,6 @@ export class Dashboard implements OnInit {
       const totalScore = completedSessions.reduce((sum, s) => sum + (s.evaluation?.overallScore || 0), 0);
       this.averageScore = Math.round(totalScore / completedSessions.length);
     }
-    console.log('calculateStatistics: averageScore =', this.averageScore);
-    console.log('calculateStatistics: Complete!');
   }
 
   getStatusColor(status: string): string {

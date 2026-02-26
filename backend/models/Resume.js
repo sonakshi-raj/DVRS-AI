@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const resumeSchema = new mongoose.Schema({
   userId: {
@@ -14,7 +14,16 @@ const resumeSchema = new mongoose.Schema({
   uploadedAt: {
     type: Date,
     default: Date.now
+  },
+  // AI-parsed data
+  parsedData: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
+  isParsed: {
+    type: Boolean,
+    default: false
   }
 });
 
-module.exports = mongoose.model('Resume', resumeSchema);
+export default mongoose.model('Resume', resumeSchema);
