@@ -419,6 +419,79 @@ const uploadVideo = async (req, res) => {
   }
 };
 
+// @desc    Mock analyze interview video (returns dummy confidence scores)
+// @route   POST /api/interview/session/:id/analyze
+// @access  Private
+const analyzeInterview = async (req, res) => {
+  try {
+    const session = await InterviewSession.findById(req.params.id);
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interview session not found'
+      });
+    }
+
+    // Check if session belongs to user
+    if (session.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to analyze this session'
+      });
+    }
+
+    // Mock AI analysis - generating random scores between 60-95
+    const mockAnalysis = {
+      facialConfidence: Math.floor(Math.random() * 35) + 60,  // 60-95
+      voiceClarity: Math.floor(Math.random() * 35) + 60,
+      eyeContact: Math.floor(Math.random() * 35) + 60,
+      speechPace: Math.floor(Math.random() * 35) + 60,
+      overallConfidence: 0,  // Will calculate as average
+      feedback: '',
+      analyzedAt: new Date()
+    };
+
+    console.log('Generated mock analysis:', mockAnalysis);
+
+    // Calculate overall confidence as average
+    mockAnalysis.overallConfidence = Math.floor(
+      (mockAnalysis.facialConfidence + mockAnalysis.voiceClarity + 
+       mockAnalysis.eyeContact + mockAnalysis.speechPace) / 4
+    );
+    
+    console.log('Final analysis with overall score:', mockAnalysis);
+
+    // Generate feedback based on overall score
+    if (mockAnalysis.overallConfidence >= 85) {
+      mockAnalysis.feedback = 'Excellent performance! You showed strong confidence and communication skills throughout the interview.';
+    } else if (mockAnalysis.overallConfidence >= 75) {
+      mockAnalysis.feedback = 'Good job! Your confidence and clarity were above average. Keep practicing to improve further.';
+    } else if (mockAnalysis.overallConfidence >= 65) {
+      mockAnalysis.feedback = 'Decent performance. Consider working on maintaining eye contact and speaking with more clarity.';
+    } else {
+      mockAnalysis.feedback = 'There is room for improvement. Practice more to build confidence and improve your communication skills.';
+    }
+
+    console.log('Analysis with feedback:', mockAnalysis);
+
+    // Save analysis to session
+    session.analysis = mockAnalysis;
+    await session.save();
+
+    res.json({
+      success: true,
+      message: 'Interview analysis completed',
+      data: mockAnalysis
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 export {
   createSession,
   getSessions,
@@ -429,5 +502,6 @@ export {
   addQuestionAnswer,
   getNextQuestion,
   deleteSession,
-  uploadVideo
+  uploadVideo,
+  analyzeInterview
 };

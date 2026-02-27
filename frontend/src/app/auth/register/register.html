@@ -29,6 +29,7 @@
           required
         />
         <small *ngIf="registerForm.get('mobile')?.touched && registerForm.get('mobile')?.hasError('required')" class="error">Mobile is required</small>
+        <small *ngIf="registerForm.get('mobile')?.touched && registerForm.get('mobile')?.hasError('pattern')" class="error">Please enter a valid 10-digit mobile number</small>
       </div>
       <div class="form-group">
         <input
@@ -37,6 +38,7 @@
           placeholder="Password"
           required
         />
+        <small *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('required')" class="error">Password is required</small>
         <small *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('minlength')" class="error">Password must be at least 6 characters</small>
       </div>
       <button
@@ -64,6 +66,11 @@
       <h2>Create Account ✨</h2>
       <p class="subtitle">Join us and get started</p>
 
+      <!-- Error Message Display -->
+      <div *ngIf="errorMessage" class="error-banner">
+        {{ errorMessage }}
+      </div>
+
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
           <input type="text" formControlName="name" placeholder="Full Name" />
@@ -84,19 +91,26 @@
           <small *ngIf="registerForm.get('mobile')?.touched && registerForm.get('mobile')?.hasError('required')" class="error">
             Mobile is required
           </small>
+          <small *ngIf="registerForm.get('mobile')?.touched && registerForm.get('mobile')?.hasError('pattern')" class="error">
+            Please enter a valid 10-digit mobile number
+          </small>
         </div>
 
         <div class="form-group">
           <input type="password" formControlName="password" placeholder="Password" />
+          <small *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('required')" class="error">
+            Password is required
+          </small>
           <small *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('minlength')" class="error">
             Password must be at least 6 characters
           </small>
         </div>
 
-        <button type="submit" class="btn-primary" [disabled]="registerForm.invalid">
-          Register
+        <button type="submit" class="btn-primary" [disabled]="registerForm.invalid || isSubmitting">
+          <span *ngIf="!isSubmitting">Register</span>
+          <span *ngIf="isSubmitting">Registering...</span>
         </button>
-
+        
         <p class="footer-text">
           Already have an account?
           <a routerLink="/login">Login here</a>

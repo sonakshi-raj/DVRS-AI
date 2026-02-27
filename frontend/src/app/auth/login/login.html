@@ -1,43 +1,3 @@
-<!-- <div class="auth-container">
-  <div class="auth-box">
-    <h2>Welcome Back 👋</h2>
-    <p class="subtitle">Please login to continue</p>
-
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-
-      <div class="form-group">
-        <input
-          type="email"
-          formControlName="email"
-          placeholder="Email Address"
-          required
-        />
-      </div>
-
-      <div class="form-group">
-        <input
-          type="password"
-          formControlName="password"
-          placeholder="Password"
-          required
-        />
-      </div>
-
-      <button
-        type="submit"
-        class="btn-primary"
-        [disabled]="loginForm.invalid"
-      >
-        Login
-      </button>
-
-    </form>
-    <p class="footer-text">
-      Don't have an account?
-      <a routerLink="/register">Register here</a>
-    </p>
-  </div>
-</div> -->
 <div class="auth-container">
 
   <!-- LEFT BLACK PANEL -->
@@ -61,14 +21,28 @@
     <div class="auth-box">
       <h2>Welcome Back 👋</h2>
       <p class="subtitle">Please login to continue</p>
+            <!-- Error Message Display -->
+      <div *ngIf="errorMessage" class="error-banner">
+        {{ errorMessage }}
+      </div>
+
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <div class="form-group">
           <input type="email" formControlName="email" placeholder="Email Address" />
+          <small *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.hasError('email')" class="error">
+            Please enter a valid email
+          </small>
         </div>
 
         <div class="form-group">
           <input type="password" formControlName="password" placeholder="Password" />
+          <small *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')" class="error">
+            Password is required
+          </small>
+          <small *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.hasError('minlength')" class="error">
+            Password must be at least 6 characters
+          </small>
         </div>
 
         <button

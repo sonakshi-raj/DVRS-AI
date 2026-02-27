@@ -20,6 +20,15 @@ export interface InterviewSession {
     dsaLevel: number;
     feedback: string;
   };
+  analysis?: {
+    facialConfidence: number;
+    voiceClarity: number;
+    eyeContact: number;
+    speechPace: number;
+    overallConfidence: number;
+    feedback: string;
+    analyzedAt: Date;
+  };
   startedAt?: Date;
   completedAt?: Date;
   createdAt: Date;
@@ -133,6 +142,31 @@ export class InterviewService {
     return this.http.post<ApiResponse<{ videoPath: string; size: number }>>(
       `${this.baseUrl}/session/${id}/upload-video`,
       formData,
+      { withCredentials: true }
+    );
+  }
+
+  // Analyze interview (mock analysis with dummy scores)
+  analyzeInterview(id: string): Observable<ApiResponse<{
+    facialConfidence: number;
+    voiceClarity: number;
+    eyeContact: number;
+    speechPace: number;
+    overallConfidence: number;
+    feedback: string;
+    analyzedAt: Date;
+  }>> {
+    return this.http.post<ApiResponse<{
+      facialConfidence: number;
+      voiceClarity: number;
+      eyeContact: number;
+      speechPace: number;
+      overallConfidence: number;
+      feedback: string;
+      analyzedAt: Date;
+    }>>(
+      `${this.baseUrl}/session/${id}/analyze`,
+      {},
       { withCredentials: true }
     );
   }

@@ -11,7 +11,8 @@ import {
   addQuestionAnswer,
   getNextQuestion,
   deleteSession,
-  uploadVideo
+  uploadVideo,
+  analyzeInterview
 } from '../controllers/interviewController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -55,5 +56,8 @@ router.post('/session/:id/qa', addQuestionAnswer);
 
 // Video upload
 router.post('/session/:id/upload-video', videoUpload.single('video'), uploadVideo);
+
+// Mock analysis endpoint
+router.post('/session/:id/analyze', analyzeInterview);
 
 export default router;

@@ -14,6 +14,125 @@
 
   <!-- INTERVIEW CONTENT -->
   <div *ngIf="showContent">
+    <!-- COMPLETED INTERVIEW VIEW MODE -->
+    <div *ngIf="isViewMode" class="view-mode-container">
+      <div class="view-header">
+        <h2>✅ Interview Completed</h2>
+        <p class="completion-date">Completed on {{ formatDate(session?.completedAt) }}</p>
+        <button class="btn-secondary" routerLink="/dashboard">← Back to Dashboard</button>
+      </div>
+
+      <!-- Interview Summary -->
+      <div class="summary-card">
+        <h3>Interview Summary</h3>
+        <div class="summary-stats">
+          <div class="stat">
+            <span class="stat-label">Total Questions:</span>
+            <span class="stat-value">{{ session?.questions?.length || 0 }}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Interview Stage:</span>
+            <span class="stat-value">{{ session?.currentState }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video Analysis Results -->
+      <div class="analysis-card" *ngIf="session?.analysis?.analyzedAt">
+        <h3>📊 Performance Analysis</h3>
+        
+        <div class="overall-score">
+          <div class="score-circle" [style.--progress]="session?.analysis?.overallConfidence + '%'">
+            <div class="score-inner">
+              <span class="score-value">{{ session?.analysis?.overallConfidence }}%</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="chart-container">
+          <h4 class="chart-title">Performance Metrics</h4>
+          
+          <!-- Y-axis labels -->
+          <div class="chart-area">
+            <div class="y-axis">
+              <span class="y-label">100%</span>
+              <span class="y-label">75%</span>
+              <span class="y-label">50%</span>
+              <span class="y-label">25%</span>
+              <span class="y-label">0%</span>
+            </div>
+            
+            <!-- Chart bars -->
+            <div class="chart-wrapper">
+              <div class="bars-container">
+                <div class="bar-wrapper">
+                  <div class="bar" [style.height.%]="session?.analysis?.facialConfidence">
+                    <span class="bar-value">{{ session?.analysis?.facialConfidence }}%</span>
+                  </div>
+                </div>
+                
+                <div class="bar-wrapper">
+                  <div class="bar" [style.height.%]="session?.analysis?.voiceClarity">
+                    <span class="bar-value">{{ session?.analysis?.voiceClarity }}%</span>
+                  </div>
+                </div>
+                
+                <div class="bar-wrapper">
+                  <div class="bar" [style.height.%]="session?.analysis?.eyeContact">
+                    <span class="bar-value">{{ session?.analysis?.eyeContact }}%</span>
+                  </div>
+                </div>
+                
+                <div class="bar-wrapper">
+                  <div class="bar" [style.height.%]="session?.analysis?.speechPace">
+                    <span class="bar-value">{{ session?.analysis?.speechPace }}%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- X-axis labels -->
+              <div class="x-axis-labels">
+                <span class="x-label">Facial<br>Confidence</span>
+                <span class="x-label">Voice<br>Clarity</span>
+                <span class="x-label">Eye<br>Contact</span>
+                <span class="x-label">Speech<br>Pace</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="feedback-section">
+          <h4>AI Feedback</h4>
+          <p>{{ session?.analysis?.feedback }}</p>
+        </div>
+      </div>
+
+      <!-- Analyzing State -->
+      <div class="analyzing-state" *ngIf="isAnalyzing">
+        <div class="spinner"></div>
+        <p>Analyzing your interview performance...</p>
+      </div>
+
+      <!-- Questions & Answers -->
+      <div class="qa-section">
+        <h3>Questions & Answers</h3>
+        <div *ngFor="let qa of session?.questions; let i = index" class="qa-card">
+          <div class="qa-number">Question {{ i + 1 }}</div>
+          <div class="qa-question">
+            <strong>Q:</strong> {{ qa.question }}
+          </div>
+          <div class="qa-answer">
+            <strong>A:</strong> {{ qa.answer }}
+          </div>
+          <div class="qa-timestamp">
+            {{ formatDate(qa.timestamp) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE INTERVIEW MODE -->
+    <div *ngIf="!isViewMode">
     <!-- PROGRESS HEADER -->
     <div class="progress-header">
       <div class="progress-bar-container">
@@ -101,5 +220,7 @@
         </button>
       </div>
     </div>
+    </div>
+    <!-- END ACTIVE INTERVIEW MODE -->
   </div>
 </div>

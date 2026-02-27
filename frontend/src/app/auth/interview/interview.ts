@@ -40,6 +40,12 @@ export class Interview implements OnInit, OnDestroy {
   recordedChunks: Blob[] = [];
   recordedVideoBlob: Blob | null = null;
 
+  // View mode for completed interviews
+  isViewMode: boolean = false;
+  
+  // Analysis state
+  isAnalyzing: boolean = false;
+
   get showContent(): boolean {
     return !this.loading && !this.error && this.session !== null;
   }
@@ -81,13 +87,21 @@ export class Interview implements OnInit, OnDestroy {
           this.session = response.data;
           this.loading = false;
           
-          // Fetch first AI-generated question
-          this.fetchNextQuestion();
+          // Check if interview is completed - show in view mode
+          if (this.session.status === 'completed') {
+            this.isViewMode = true;
+            // Automatically analyze if not already analyzed
+            if (!this.session.analysis?.analyzedAt) {
+              setTimeout(() => this.analyzeInterview(), 500);
+            }
+          } else {
+            // Active interview - fetch next question and start recording
+            this.fetchNextQuestion();
+            // Initialize camera after content is rendered
+            setTimeout(() => this.initializeCamera(), 500);
+          }
           
           this.cdr.detectChanges();
-          
-          // Initialize camera after content is rendered
-          setTimeout(() => this.initializeCamera(), 500);
         } else {
           console.error('Invalid response structure', response);
           this.error = 'Failed to load session data.';
@@ -270,6 +284,17 @@ export class Interview implements OnInit, OnDestroy {
     return this.session?.currentState === 'closing' || this.session?.currentState === 'end';
   }
 
+  formatDate(date: Date | undefined): string {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
   async initializeCamera(): Promise<void> {
     try {
       // Request camera access
@@ -345,6 +370,36 @@ export class Interview implements OnInit, OnDestroy {
       this.isRecording = false;
       this.cdr.detectChanges();
     }
+  }
+
+  analyzeInterview(): void {
+    if (!this.sessionId) {
+      alert('Session ID not found');
+      return;
+    }
+
+    console.log('Starting analysis for session:', this.sessionId);
+    this.isAnalyzing = true;
+    this.interviewService.analyzeInterview(this.sessionId).subscribe({
+      next: (response) => {
+        console.log('Analysis complete:', response.data);
+        this.isAnalyzing = false;
+        if (response.success && response.data) {
+          // Update the session with analysis data
+          if (this.session) {
+            this.session.analysis = response.data;
+          }
+        }
+        // Force change detection
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isAnalyzing = false;
+        console.error('Analysis failed:', err);
+        this.cdr.detectChanges();
+        alert('Failed to analyze interview. Please try again.');
+      }
+    });
   }
 
   ngOnDestroy(): void {

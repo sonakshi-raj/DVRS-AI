@@ -66,6 +66,36 @@ const interviewSessionSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  analysis: {
+    facialConfidence: {
+      type: Number,
+      default: 0
+    },
+    voiceClarity: {
+      type: Number,
+      default: 0
+    },
+    eyeContact: {
+      type: Number,
+      default: 0
+    },
+    speechPace: {
+      type: Number,
+      default: 0
+    },
+    overallConfidence: {
+      type: Number,
+      default: 0
+    },
+    feedback: {
+      type: String,
+      default: ''
+    },
+    analyzedAt: {
+      type: Date,
+      default: null
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now
