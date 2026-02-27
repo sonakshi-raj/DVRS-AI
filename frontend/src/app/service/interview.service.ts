@@ -8,7 +8,7 @@ export interface InterviewSession {
   status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
   resumeId?: string;
   jobDescription?: string;
-  currentState: 'introduction' | 'resume-based' | 'follow-up' | 'deep-dive' | 'closing';
+  currentState: 'introduction' | 'resume-based' | 'follow-up' | 'deep-dive' | 'closing' | 'end';
   questions: Array<{
     question: string;
     answer: string;
@@ -101,10 +101,38 @@ export class InterviewService {
     );
   }
 
+  // Get next AI-generated question
+  getNextQuestion(id: string): Observable<ApiResponse<{
+    question: string;
+    difficulty: string;
+    category: string;
+  }>> {
+    return this.http.get<ApiResponse<{
+      question: string;
+      difficulty: string;
+      category: string;
+    }>>(
+      `${this.baseUrl}/session/${id}/next-question`,
+      { withCredentials: true }
+    );
+  }
+
   // Delete interview session
   deleteSession(id: string): Observable<ApiResponse<{ message: string }>> {
     return this.http.delete<ApiResponse<{ message: string }>>(
       `${this.baseUrl}/session/${id}`,
+      { withCredentials: true }
+    );
+  }
+
+  // Upload interview video
+  uploadVideo(id: string, videoBlob: Blob): Observable<ApiResponse<{ videoPath: string; size: number }>> {
+    const formData = new FormData();
+    formData.append('video', videoBlob, `interview-${id}.webm`);
+
+    return this.http.post<ApiResponse<{ videoPath: string; size: number }>>(
+      `${this.baseUrl}/session/${id}/upload-video`,
+      formData,
       { withCredentials: true }
     );
   }

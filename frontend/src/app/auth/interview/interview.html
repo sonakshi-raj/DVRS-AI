@@ -19,13 +19,48 @@
       <div class="progress-bar-container">
         <div class="progress-bar" [style.width.%]="progressPercentage"></div>
       </div>
-      <p class="progress-text">Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}</p>
+      <p class="progress-text">Interview Stage: {{ session?.currentState }}</p>
       <p class="progress-text">Status: {{ session?.status }}</p>
     </div>
 
+    <!-- VIDEO PREVIEW -->
+    <div class="video-section">
+      <div class="video-container">
+        <video 
+          #videoElement
+          autoplay
+          muted
+          playsinline
+          class="video-preview"
+        ></video>
+        <div class="video-overlay" *ngIf="!mediaStream && !cameraError">
+          <div class="spinner"></div>
+          <p>Initializing camera...</p>
+        </div>
+        <div class="camera-error" *ngIf="cameraError">
+          <p>⚠️ {{ cameraError }}</p>
+        </div>
+        <!-- Recording indicator -->
+        <div class="recording-indicator" *ngIf="isRecording">
+          <span class="red-dot"></span>
+          <span class="rec-text">RECORDING</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOADING QUESTION STATE -->
+    <div class="loading" *ngIf="fetchingQuestion">
+      <div class="spinner"></div>
+      <p>Generating your next question...</p>
+    </div>
+
     <!-- QUESTION CARD -->
-    <div class="question-card">
-      <h3>Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}</h3>
+    <div class="question-card" *ngIf="!fetchingQuestion && currentQuestionData">
+      <!-- Question metadata badges -->
+      <div class="question-meta">
+        <span class="badge badge-{{ currentDifficulty }}">{{ currentDifficulty }}</span>
+        <span class="badge badge-category">{{ currentCategory }}</span>
+      </div>
 
       <p class="question">
         {{ currentQuestion }}
@@ -46,13 +81,22 @@
         <button class="btn-secondary" routerLink="/home" [disabled]="submitting">
           Exit Interview
         </button>
+
+        <button 
+          class="btn-warning" 
+          (click)="completeInterview()"
+          [disabled]="submitting"
+        >
+          <span *ngIf="!submitting">✓ Complete Interview Now</span>
+          <span *ngIf="submitting">Completing...</span>
+        </button>
         
         <button 
           class="btn-primary" 
           (click)="submitAnswer()"
           [disabled]="submitting || !currentAnswer.trim()"
         >
-          <span *ngIf="!submitting">{{ isLastQuestion ? 'Complete Interview' : 'Submit & Next' }}</span>
+          <span *ngIf="!submitting">Submit & Next</span>
           <span *ngIf="submitting">Saving...</span>
         </button>
       </div>

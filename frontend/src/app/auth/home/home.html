@@ -5,13 +5,16 @@
     <h1>Welcome to <span>DVRS</span></h1>
     <p>AI-Powered Interview & Resume Evaluation System</p>
 
-    <button class="logout-btn" (click)="logout()">Logout</button>
+    <div class="header-buttons">
+      <button class="dashboard-btn" routerLink="/dashboard">Dashboard</button>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
   </div>
 
   <!-- UPLOAD SECTION -->
   <div class="upload-section">
     <h2>Upload Your Resume</h2>
-    <p>Supported formats: PDF, DOCX (Max 2MB)</p>
+    <p class="subtitle">Supported formats: PDF, DOCX (Max 2MB)</p>
 
     <!-- UPLOAD BOX -->
     <div class="upload-box" (click)="fileInput.click()">

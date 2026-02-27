@@ -42,7 +42,7 @@
 // }
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../service/auth-service';
 import { InterviewService } from '../../service/interview.service';
@@ -50,7 +50,7 @@ import { InterviewService } from '../../service/interview.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule, HttpClientModule, RouterModule],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })

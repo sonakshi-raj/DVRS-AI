@@ -1,8 +1,10 @@
 """
-Minimal FastAPI server - ONLY for resume parsing (Step 2)
+Minimal FastAPI server - Resume parsing and question generation
 """
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import Optional, List, Dict
 from pathlib import Path
 import shutil
 from dotenv import load_dotenv
@@ -11,6 +13,7 @@ from resume_parsing.extraction.extract import extract_text
 from resume_parsing.cleaning.clean_text import clean_text
 from resume_parsing.llm.hf_llm import HuggingFaceLLM
 from resume_parsing.llm.llm_extract import extract_structured_resume
+from resume_parsing.llm.generate_question import generate_question
 
 # Load environment variables
 load_dotenv()
@@ -38,6 +41,14 @@ def get_llm():
 # Temp upload directory
 TEMP_UPLOAD_DIR = Path(__file__).parent / "temp_uploads"
 TEMP_UPLOAD_DIR.mkdir(exist_ok=True)
+
+
+# Pydantic models for request/response
+class QuestionRequest(BaseModel):
+    state: str  # introduction, resume-based, follow-up, deep-dive, closing
+    resume_data: Optional[Dict] = None
+    job_description: Optional[str] = None
+    conversation_history: Optional[List[Dict]] = None
 
 
 @app.get("/health")
@@ -86,6 +97,32 @@ async def parse_resume(file: UploadFile = File(...)):
         if file_path.exists():
             file_path.unlink()
         raise HTTPException(status_code=500, detail=f"Parsing failed: {str(e)}")
+
+
+@app.post("/api/generate-question")
+async def generate_interview_question(request: QuestionRequest):
+    """
+    Generate interview question based on state and context
+    """
+    try:
+        llm_instance = get_llm()
+        
+        question_data = generate_question(
+            llm=llm_instance,
+            state=request.state,
+            resume_data=request.resume_data,
+            job_description=request.job_description,
+            conversation_history=request.conversation_history
+        )
+        
+        return {
+            "success": True,
+            "data": question_data,
+            "message": "Question generated successfully"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Question generation failed: {str(e)}")
 
 
 if __name__ == "__main__":

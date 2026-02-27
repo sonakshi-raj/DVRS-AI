@@ -1,6 +1,7 @@
 import InterviewSession from '../models/InterviewSession.js';
-
+import Resume from '../models/Resume.js';
 import InterviewEngine from "../engine/interviewEngine.js";
+import aiService from '../services/aiService.js';
 
 
 // @desc    Create a new interview session
@@ -267,6 +268,69 @@ res.json({
   }
 };
 
+// @desc    Get next AI-generated question
+// @route   GET /api/interview/session/:id/next-question
+// @access  Private
+const getNextQuestion = async (req, res) => {
+  try {
+    const session = await InterviewSession.findById(req.params.id);
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interview session not found'
+      });
+    }
+
+    // Check if session belongs to user
+    if (session.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to access this session'
+      });
+    }
+
+    // Get resume data if available
+    let resumeData = null;
+    if (session.resumeId) {
+      try {
+        const resume = await Resume.findById(session.resumeId);
+        if (resume && resume.isParsed) {
+          resumeData = resume.parsedData;
+        }
+      } catch (err) {
+        console.error('Error fetching resume:', err.message);
+      }
+    }
+
+    // Get conversation history (last 3 Q&A pairs)
+    const conversationHistory = session.questions.slice(-3).map(qa => ({
+      question: qa.question,
+      answer: qa.answer
+    }));
+
+    // Call AI service to generate question
+    const aiResponse = await aiService.generateQuestion({
+      state: session.currentState,
+      resumeData: resumeData,
+      jobDescription: session.jobDescription,
+      conversationHistory: conversationHistory
+    });
+
+    res.json({
+      success: true,
+      data: aiResponse.data,
+      currentState: session.currentState
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 // @desc    Delete interview session
 // @route   DELETE /api/interview/session/:id
 // @access  Private
@@ -303,6 +367,58 @@ const deleteSession = async (req, res) => {
   }
 };
 
+// @desc    Upload interview video
+// @route   POST /api/interview/session/:id/upload-video
+// @access  Private
+const uploadVideo = async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No video file uploaded'
+      });
+    }
+
+    const session = await InterviewSession.findById(sessionId);
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interview session not found'
+      });
+    }
+
+    // Verify user owns this session
+    if (session.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to upload video for this session'
+      });
+    }
+
+    // Save video path to session
+    session.videoPath = file.path;
+    await session.save();
+
+    res.json({
+      success: true,
+      message: 'Video uploaded successfully',
+      data: {
+        videoPath: file.path,
+        size: file.size
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 export {
   createSession,
   getSessions,
@@ -311,5 +427,7 @@ export {
   startSession,
   completeSession,
   addQuestionAnswer,
-  deleteSession
+  getNextQuestion,
+  deleteSession,
+  uploadVideo
 };

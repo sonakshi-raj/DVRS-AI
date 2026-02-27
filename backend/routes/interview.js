@@ -1,4 +1,5 @@
 import express from 'express';
+import multer from 'multer';
 const router = express.Router();
 import {
   createSession,
@@ -8,9 +9,31 @@ import {
   startSession,
   completeSession,
   addQuestionAnswer,
-  deleteSession
+  getNextQuestion,
+  deleteSession,
+  uploadVideo
 } from '../controllers/interviewController.js';
 import { protect } from '../middleware/auth.js';
+
+// Multer config for video upload
+const videoStorage = multer.diskStorage({
+  destination: 'uploads/videos/',
+  filename: (req, file, cb) => {
+    cb(null, `interview-${Date.now()}.webm`);
+  }
+});
+
+const videoUpload = multer({ 
+  storage: videoStorage,
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only video files are allowed'));
+    }
+  }
+});
 
 // All routes are protected (require authentication)
 router.use(protect);
@@ -26,7 +49,11 @@ router.delete('/session/:id', deleteSession);
 router.put('/session/:id/start', startSession);
 router.put('/session/:id/complete', completeSession);
 
-// Add Q&A to session
+// Question generation and Q&A
+router.get('/session/:id/next-question', getNextQuestion);
 router.post('/session/:id/qa', addQuestionAnswer);
+
+// Video upload
+router.post('/session/:id/upload-video', videoUpload.single('video'), uploadVideo);
 
 export default router;

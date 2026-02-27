@@ -62,6 +62,10 @@ const interviewSessionSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  videoPath: {
+    type: String,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

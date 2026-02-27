@@ -5,7 +5,7 @@ import fs from 'fs';
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
 /**
- * Simple AI Service Client - Just resume parsing for now
+ * AI Service Client - Resume parsing and question generation
  */
 class AIService {
   /**
@@ -33,6 +33,40 @@ class AIService {
       return response.data;
     } catch (error) {
       throw new Error(`Resume parsing failed: ${error.response?.data?.detail || error.message}`);
+    }
+  }
+
+  /**
+   * Generate interview question using AI
+   * @param {Object} params - Question generation parameters
+   * @param {string} params.state - Interview state
+   * @param {Object} params.resumeData - Parsed resume data (optional)
+   * @param {string} params.jobDescription - Job description (optional)
+   * @param {Array} params.conversationHistory - Previous Q&A pairs (optional)
+   * @returns {Promise<Object>} Generated question
+   */
+  async generateQuestion({ state, resumeData, jobDescription, conversationHistory }) {
+    try {
+      const response = await axios.post(
+        `${AI_SERVICE_URL}/api/generate-question`,
+        {
+          state: state,
+          resume_data: resumeData || null,
+          job_description: jobDescription || null,
+          conversation_history: conversationHistory || []
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          timeout: 30000, // 30 second timeout
+          family: 4  // Force IPv4
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      throw new Error(`Question generation failed: ${error.response?.data?.detail || error.message}`);
     }
   }
 
