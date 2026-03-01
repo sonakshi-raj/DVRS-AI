@@ -6,7 +6,7 @@ class HuggingFaceLLM:
     def __init__(
         self,
         model: str = "meta-llama/Meta-Llama-3-8B-Instruct",
-        max_tokens: int = 5500,
+        max_tokens: int = 1500,
     ):
         token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
         if not token:

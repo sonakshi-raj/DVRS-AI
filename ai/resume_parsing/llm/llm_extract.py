@@ -57,7 +57,9 @@ def extract_structured_resume(llm, cleaned_text: str) -> ResumeSchema:
             "Input document does not appear to be a resume. "
             "Resume parsing aborted."
         )
-    
+    # if not looks_like_resume(cleaned_text):
+    #     print("⚠ Resume keywords not detected — continuing anyway.")
+    cleaned_text = cleaned_text[:2000]
     schema_json = ResumeSchema.model_json_schema()
     prompt = build_prompt(cleaned_text, json.dumps(schema_json, indent=2))
 

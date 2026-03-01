@@ -15,12 +15,13 @@ def extract_text(file_path: Union[str, Path]) -> str:
 def _extract_from_pdf(file_path: Path) -> str:
     loader = PyPDFLoader(str(file_path))
     pages = loader.load()
-
+    
     chunks = []
     for page in pages:
         if page.page_content:
             chunks.append(page.page_content.strip())
-
+    print("PDF pages loaded:", len(pages))
+    print("Extracted text length:", len("\n\n".join(chunks)))
     return "\n\n".join(chunks)
 def _extract_from_docx(file_path: Path) -> str:
     doc = Document(file_path)
