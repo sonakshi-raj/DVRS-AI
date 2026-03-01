@@ -85,6 +85,53 @@ class AIService {
       return false;
     }
   }
+
+  /**
+   * Evaluate interview answer using AI
+   * @param {Object} params - Evaluation parameters
+   * @param {string} params.question - The interview question
+   * @param {string} params.answer - The candidate's answer
+   * @param {string} params.state - Interview state
+   * @param {Object} params.resumeData - Parsed resume data (optional)
+   * @returns {Promise<Object>} Evaluation result with score, feedback, signal
+   */
+  async evaluateAnswer({ question, answer, state, resumeData }) {
+    try {
+      const response = await axios.post(
+        `${AI_SERVICE_URL}/api/evaluate-answer`,
+        {
+          question,
+          answer,
+          state,
+          resume_data: resumeData || null
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          timeout: 30000, // 30 second timeout
+          family: 4  // Force IPv4
+        }
+      );
+
+      console.log('AI Evaluation Response:', response.data);
+      // Extract the actual evaluation data from the wrapped response
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('❌ Answer evaluation failed:', error.message);
+      console.error('   URL:', `${AI_SERVICE_URL}/api/evaluate-answer`);
+      if (error.response) {
+        console.error('   Status:', error.response.status);
+        console.error('   Data:', error.response.data);
+      }
+      // Return fallback score if AI service fails
+      return {
+        score: 5,
+        feedback: 'Answer received.',
+        signal: 'AVERAGE'
+      };
+    }
+  }
 }
 
 export default new AIService();

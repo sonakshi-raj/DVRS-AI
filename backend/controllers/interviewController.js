@@ -235,15 +235,42 @@ engine.state = session.currentState;
 engine.tranistion.followups = session.stateCounters?.followups || 0;
 engine.tranistion.deepdives = session.stateCounters?.deepdives || 0;
 
-// temporary scoring logic (later AI will send score)
-let score = 5; 
-let signal = "AVERAGE";
+// Get resume data for AI evaluation
+let resumeData = null;
+if (session.resumeId) {
+  try {
+    const resume = await Resume.findById(session.resumeId);
+    if (resume && resume.parsedData) {
+      resumeData = resume.parsedData;
+    }
+  } catch (err) {
+    console.error('Failed to fetch resume for evaluation:', err.message);
+  }
+}
 
-if (score >= 8) signal = "GOOD";
-if (score <= 4) signal = "BAD";
+// AI-powered answer evaluation
+console.log('📤 Calling AI evaluation service...');
+const evaluation = await aiService.evaluateAnswer({
+  question,
+  answer,
+  state: session.currentState,
+  resumeData
+});
+
+const { score, signal, feedback } = evaluation;
+
+// Log evaluation results for debugging
+console.log('\n🤖 AI Answer Evaluation:');
+console.log(`   Score: ${score}/10`);
+console.log(`   Signal: ${signal}`);
+console.log(`   Feedback: ${feedback}`);
+console.log(`   Current State: ${session.currentState}`);
 
 // get next interview state based on current state and answer quality
 const nextState = engine.process(signal);
+
+console.log(`   Next State: ${nextState}`);
+console.log('─────────────────────────────────────\n');
 
 // save state and counters back to DB
 session.currentState = nextState;
@@ -257,6 +284,7 @@ await session.save();
 res.json({
   success: true,
   nextState: nextState,
+  evaluation: { score, signal, feedback }, // Include AI evaluation for debugging
   data: session
 });
 

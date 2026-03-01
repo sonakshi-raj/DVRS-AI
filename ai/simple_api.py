@@ -14,6 +14,7 @@ from resume_parsing.cleaning.clean_text import clean_text
 from resume_parsing.llm.hf_llm import HuggingFaceLLM
 from resume_parsing.llm.llm_extract import extract_structured_resume
 from resume_parsing.llm.generate_question import generate_question
+from resume_parsing.llm.evaluate_answer import evaluate_answer
 
 # Load environment variables
 load_dotenv()
@@ -49,6 +50,13 @@ class QuestionRequest(BaseModel):
     resume_data: Optional[Dict] = None
     job_description: Optional[str] = None
     conversation_history: Optional[List[Dict]] = None
+
+
+class EvaluationRequest(BaseModel):
+    question: str
+    answer: str
+    state: Optional[str] = "unknown"
+    resume_data: Optional[Dict] = None
 
 
 @app.get("/health")
@@ -123,6 +131,32 @@ async def generate_interview_question(request: QuestionRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Question generation failed: {str(e)}")
+
+
+@app.post("/api/evaluate-answer")
+async def evaluate_interview_answer(request: EvaluationRequest):
+    """
+    Evaluate an interview answer and return score, feedback, and signal
+    """
+    try:
+        llm_instance = get_llm()
+        
+        evaluation_result = evaluate_answer(
+            llm=llm_instance,
+            question=request.question,
+            answer=request.answer,
+            state=request.state,
+            resume_data=request.resume_data
+        )
+        
+        return {
+            "success": True,
+            "data": evaluation_result,
+            "message": "Answer evaluated successfully"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Answer evaluation failed: {str(e)}")
 
 
 if __name__ == "__main__":

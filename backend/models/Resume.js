@@ -6,6 +6,17 @@ const resumeSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  displayName: {
+    type: String,
+    default: function() {
+      return this.originalName || 'Untitled Resume';
+    }
+  },
+  category: {
+    type: String,
+    enum: ['technical', 'management', 'sales', 'design', 'other'],
+    default: 'other'
+  },
   originalName: String,
   fileName: String,
   filePath: String,

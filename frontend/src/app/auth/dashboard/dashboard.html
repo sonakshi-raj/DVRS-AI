@@ -15,6 +15,22 @@
     </div>
   </div>
 
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'interviews'"
+      (click)="switchTab('interviews')">
+      📊 Interviews
+    </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab === 'resumes'"
+      (click)="switchTab('resumes')">
+      📄 My Resumes
+    </button>
+  </div>
+
   <!-- Loading State -->
   <div *ngIf="loading" class="loading">
     <p>Loading your dashboard...</p>
@@ -27,8 +43,11 @@
 
   <!-- Dashboard Content -->
   <div *ngIf="!loading && !error">
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
+    
+    <!-- Interviews Tab -->
+    <div *ngIf="activeTab === 'interviews'">
+      <!-- Statistics Cards -->
+      <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">📊</div>
         <div class="stat-content">
@@ -136,5 +155,149 @@
         </table>
       </div>
     </div>
+    </div>
+    <!-- End Interviews Tab -->
+
+    <!-- Resumes Tab -->
+    <div *ngIf="activeTab === 'resumes'">
+      <div class="resumes-section">
+        <h2>My Resumes</h2>
+        
+        <!-- Upload Resume Form -->
+        <div class="upload-resume-card">
+          <h3>📤 Upload New Resume</h3>
+          <div class="upload-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="resumeFileInput">Choose File (PDF or Word)</label>
+                <input 
+                  type="file" 
+                  id="resumeFileInput"
+                  accept=".pdf,.doc,.docx"
+                  (change)="onFileSelected($event)"
+                  [disabled]="uploadingResume">
+                <p class="file-hint" *ngIf="selectedFile">
+                  Selected: {{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})
+                </p>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="resumeName">Resume Name</label>
+                <input 
+                  type="text" 
+                  id="resumeName"
+                  [(ngModel)]="newResumeName"
+                  placeholder="e.g., Senior Developer Resume"
+                  [disabled]="uploadingResume">
+              </div>
+
+              <div class="form-group">
+                <label for="resumeCategory">Category</label>
+                <select 
+                  id="resumeCategory"
+                  [(ngModel)]="newResumeCategory"
+                  [disabled]="uploadingResume">
+                  <option value="technical">Technical</option>
+                  <option value="management">Management</option>
+                  <option value="sales">Sales</option>
+                  <option value="design">Design</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button 
+                class="btn-primary" 
+                (click)="uploadResume()"
+                [disabled]="!selectedFile || uploadingResume">
+                {{ uploadingResume ? 'Uploading...' : 'Upload Resume' }}
+              </button>
+              <button 
+                class="btn-secondary" 
+                (click)="resetUploadForm()"
+                [disabled]="uploadingResume">
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="resumesLoading" class="loading">
+          <p>Loading resumes...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!resumesLoading && resumes.length === 0" class="empty-state">
+          <p>📄 No resumes uploaded yet</p>
+          <p class="empty-subtitle">Upload your resume to get started with interviews</p>
+        </div>
+
+        <!-- Resumes List -->
+        <div *ngIf="!resumesLoading && resumes.length > 0" class="resumes-list">
+          <div *ngFor="let resume of resumes" class="resume-card">
+            <div class="resume-header">
+              <div class="resume-icon">📄</div>
+              <div class="resume-info">
+                <div *ngIf="editingResumeId !== resume._id">
+                  <h4>{{ resume.displayName }}</h4>
+                  <span class="category-badge">{{ getCategoryDisplay(resume.category) }}</span>
+                </div>
+                <div *ngIf="editingResumeId === resume._id" class="edit-form">
+                  <input 
+                    type="text" 
+                    [(ngModel)]="editResumeName"
+                    class="edit-input">
+                  <select [(ngModel)]="editResumeCategory" class="edit-select">
+                    <option value="technical">Technical</option>
+                    <option value="management">Management</option>
+                    <option value="sales">Sales</option>
+                    <option value="design">Design</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="resume-actions">
+                <div *ngIf="editingResumeId !== resume._id">
+                  <button class="btn-icon" (click)="startEditResume(resume)" title="Edit">✏️</button>
+                  <button class="btn-icon" (click)="deleteResume(resume._id, resume.displayName)" title="Delete">🗑️</button>
+                </div>
+                <div *ngIf="editingResumeId === resume._id">
+                  <button class="btn-save" (click)="saveResumeEdit(resume._id)">Save</button>
+                  <button class="btn-cancel" (click)="cancelEditResume()">Cancel</button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="resume-details">
+              <div class="detail-item">
+                <span class="detail-label">Original File:</span>
+                <span class="detail-value">{{ resume.originalName }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Size:</span>
+                <span class="detail-value">{{ formatFileSize(resume.fileSize) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Uploaded:</span>
+                <span class="detail-value">{{ formatResumeDate(resume.uploadedAt) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value">
+                  <span *ngIf="resume.isParsed" class="status-success">✅ Parsed</span>
+                  <span *ngIf="!resume.isParsed" class="status-warning">⚠️ Not Parsed</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Resumes Tab -->
+
   </div>
 </div>

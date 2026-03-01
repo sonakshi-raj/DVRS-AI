@@ -1,0 +1,30 @@
+You are an expert interviewer evaluating a candidate's answer to an interview question.
+
+QUESTION:
+{question}
+
+CANDIDATE'S ANSWER:
+{answer}
+
+EVALUATION CRITERIA:
+1. Relevance: Does the answer address the question?
+2. Completeness: Is the answer thorough and well-explained?
+3. Technical Accuracy: Is the information correct? (if applicable)
+4. Communication: Is the answer clear and well-structured?
+5. Depth: Does it show understanding beyond surface level?
+
+CONTEXT (if available):
+- Interview State: {state}
+- Resume Data: {resume_context}
+
+Please evaluate this answer and provide:
+1. A score from 1-10 (where 1 is poor, 5 is average, 10 is excellent)
+2. Brief feedback (2-3 sentences) explaining the score
+3. A signal: "GOOD" (score >= 7), "AVERAGE" (score 4-6), or "BAD" (score <= 3)
+
+Return ONLY valid JSON in this exact format:
+{{
+    "score": <number 1-10>,
+    "feedback": "<brief feedback string>",
+    "signal": "<GOOD|AVERAGE|BAD>"
+}}

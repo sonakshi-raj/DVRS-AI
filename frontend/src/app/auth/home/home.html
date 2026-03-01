@@ -11,10 +11,86 @@
     </div>
   </div>
 
-  <!-- UPLOAD SECTION -->
-  <div class="upload-section">
+  <!-- MODE SELECTOR -->
+  <div class="mode-selector">
+    <button 
+      class="mode-btn" 
+      [class.active]="resumeMode === 'existing'"
+      (click)="switchMode('existing')"
+      [disabled]="resumes.length === 0">
+      📁 Use Existing Resume ({{ resumes.length }})
+    </button>
+    <button 
+      class="mode-btn" 
+      [class.active]="resumeMode === 'new'"
+      (click)="switchMode('new')">
+      📤 Upload New Resume
+    </button>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loadingResumes" class="loading-state">
+    <p>Loading your resumes...</p>
+  </div>
+
+  <!-- EXISTING RESUME SELECTION -->
+  <div *ngIf="!loadingResumes && resumeMode === 'existing'" class="resume-selection">
+    <h2>Select a Resume</h2>
+    <p class="subtitle">Choose from your previously uploaded resumes</p>
+
+    <div *ngIf="resumes.length === 0" class="empty-message">
+      <p>📄 You haven't uploaded any resumes yet.</p>
+      <p>Click "Upload New Resume" to get started!</p>
+    </div>
+
+    <div *ngIf="resumes.length > 0" class="resume-list">
+      <div 
+        *ngFor="let resume of resumes" 
+        class="resume-option"
+        [class.selected]="selectedResumeId === resume._id"
+        (click)="selectedResumeId = resume._id">
+        <div class="radio-indicator">
+          <span *ngIf="selectedResumeId === resume._id">●</span>
+          <span *ngIf="selectedResumeId !== resume._id">○</span>
+        </div>
+        <div class="resume-details">
+          <h4>{{ resume.displayName }}</h4>
+          <div class="resume-meta">
+            <span class="category">{{ getCategoryDisplay(resume.category) }}</span>
+            <span class="date">{{ formatDate(resume.uploadedAt) }}</span>
+            <span class="status" *ngIf="resume.isParsed">✅ Parsed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW RESUME UPLOAD -->
+  <div *ngIf="!loadingResumes && resumeMode === 'new'" class="upload-section">
     <h2>Upload Your Resume</h2>
-    <p class="subtitle">Supported formats: PDF, DOCX (Max 2MB)</p>
+    <p class="subtitle">Supported formats: PDF, DOCX (Max 10MB)</p>
+
+    <!-- Resume Name and Category -->
+    <div class="resume-info-form">
+      <div class="form-group">
+        <label for="resumeName">Resume Name (Optional)</label>
+        <input 
+          type="text" 
+          id="resumeName" 
+          [(ngModel)]="newResumeName"
+          placeholder="e.g., Senior Developer Resume">
+      </div>
+      <div class="form-group">
+        <label for="resumeCategory">Category</label>
+        <select id="resumeCategory" [(ngModel)]="newResumeCategory">
+          <option value="technical">Technical</option>
+          <option value="management">Management</option>
+          <option value="sales">Sales</option>
+          <option value="design">Design</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
 
     <!-- UPLOAD BOX -->
     <div class="upload-box" (click)="fileInput.click()">
@@ -22,12 +98,10 @@
       <h3>Drag & Drop your resume here</h3>
       <p>or</p>
 
-      <!-- SAME BUTTON, NOW FUNCTIONAL -->
       <button type="button" class="browse-btn">
         Browse File
       </button>
 
-      <!-- REQUIRED HIDDEN INPUT (NO UI CHANGE) -->
       <input
         type="file"
         #fileInput
@@ -37,22 +111,23 @@
       />
     </div>
 
-    <!-- FILE PREVIEW (ONLY SHOWS AFTER UPLOAD) -->
+    <!-- FILE PREVIEW -->
     <div *ngIf="selectedFile" class="preview">
-      <p><strong>Selected file:</strong> {{ selectedFile.name }}</p>
+      <p><strong>Selected file:</strong> {{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})</p>
     </div>
+  </div>
 
-    <!-- ACTION BUTTON -->
-    <div class="actions">
-      <button
-        class="primary-btn"
-        [disabled]="!selectedFile || isUploading"
-        (click)="startInterview()"
-      >
-        <span *ngIf="!isUploading">Start Interview</span>
-        <span *ngIf="isUploading">Creating Session...</span>
-      </button>
-    </div>
+  <!-- ACTION BUTTON -->
+  <div class="actions">
+    <button
+      class="primary-btn"
+      [disabled]="isUploading || (resumeMode === 'existing' && !selectedResumeId) || (resumeMode === 'new' && !selectedFile)"
+      (click)="startInterview()">
+      <span *ngIf="!isUploading">Start Interview</span>
+      <span *ngIf="isUploading">
+        {{ resumeMode === 'new' ? 'Uploading & Creating Session...' : 'Creating Session...' }}
+      </span>
+    </button>
   </div>
 
 </div>
