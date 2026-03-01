@@ -110,6 +110,44 @@ export class InterviewService {
     );
   }
 
+  // Add video question and answer with transcription
+  addVideoQuestionAnswer(id: string, question: string, videoBlob: Blob, audioBlob: Blob): Observable<{
+    success: boolean;
+    nextState: string;
+    transcript: string;
+    evaluation: {
+      score: number;
+      signal: string;
+      feedback: string;
+    };
+    videoPath: string;
+    language: string;
+    data: InterviewSession;
+  }> {
+    const formData = new FormData();
+    formData.append('video', videoBlob, `answer-${Date.now()}.webm`);
+    formData.append('audio', audioBlob, `audio-${Date.now()}.wav`); // WAV extension
+    formData.append('question', question);
+
+    return this.http.post<{
+      success: boolean;
+      nextState: string;
+      transcript: string;
+      evaluation: {
+        score: number;
+        signal: string;
+        feedback: string;
+      };
+      videoPath: string;
+      language: string;
+      data: InterviewSession;
+    }>(
+      `${this.baseUrl}/session/${id}/qa-video`,
+      formData,
+      { withCredentials: true }
+    );
+  }
+
   // Get next AI-generated question
   getNextQuestion(id: string): Observable<ApiResponse<{
     question: string;

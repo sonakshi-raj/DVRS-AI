@@ -520,6 +520,140 @@ const analyzeInterview = async (req, res) => {
   }
 };
 
+// @desc    Add video question and answer to session (with transcription)
+// @route   POST /api/interview/session/:id/qa-video
+// @access  Private
+const addVideoQuestionAnswer = async (req, res) => {
+  try {
+    const { question } = req.body;
+    const files = req.files;
+
+    if (!files || !files.video || !files.audio) {
+      return res.status(400).json({
+        success: false,
+        message: 'Both video and audio files are required'
+      });
+    }
+
+    const videoFile = files.video[0];
+    const audioFile = files.audio[0];
+
+    if (!question) {
+      return res.status(400).json({
+        success: false,
+        message: 'Question is required'
+      });
+    }
+
+    const session = await InterviewSession.findById(req.params.id);
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interview session not found'
+      });
+    }
+
+    // Check if session belongs to user
+    if (session.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to update this session'
+      });
+    }
+
+    // Step 1: Transcribe the AUDIO using Whisper (not video - no FFmpeg needed!)
+    console.log('🎬 Processing video answer...');
+    console.log(`   Video file: ${videoFile.filename} (${(videoFile.size / 1024 / 1024).toFixed(2)} MB)`);
+    console.log(`   Audio file: ${audioFile.filename} (${(audioFile.size / 1024).toFixed(2)} KB) - WAV format`);
+    
+    const transcriptionResult = await aiService.transcribeVideo(audioFile.path);
+    const answer = transcriptionResult.transcript;
+
+    console.log(`✅ Transcription: "${answer.substring(0, 100)}..."`);
+
+    // Step 2: Interview engine logic (same as text-based)
+    const engine = new InterviewEngine();
+
+    // Restore engine state from session
+    engine.state = session.currentState;
+    engine.tranistion.followups = session.stateCounters?.followups || 0;
+    engine.tranistion.deepdives = session.stateCounters?.deepdives || 0;
+
+    // Get resume data for AI evaluation
+    let resumeData = null;
+    if (session.resumeId) {
+      try {
+        const resume = await Resume.findById(session.resumeId);
+        if (resume && resume.parsedData) {
+          resumeData = resume.parsedData;
+        }
+      } catch (err) {
+        console.error('Failed to fetch resume for evaluation:', err.message);
+      }
+    }
+
+    // Step 3: AI-powered answer evaluation
+    console.log('📤 Calling AI evaluation service...');
+    const evaluation = await aiService.evaluateAnswer({
+      question,
+      answer,
+      state: session.currentState,
+      resumeData
+    });
+
+    const { score, signal, feedback } = evaluation;
+
+    // Log evaluation results
+    console.log('\n🤖 AI Answer Evaluation:');
+    console.log(`   Score: ${score}/10`);
+    console.log(`   Signal: ${signal}`);
+    console.log(`   Feedback: ${feedback}`);
+    console.log(`   Current State: ${session.currentState}`);
+
+    // Step 4: Get next state
+    const nextState = engine.process(signal);
+
+    console.log(`   Next State: ${nextState}`);
+    console.log('─────────────────────────────────────\n');
+
+    // Step 5: Save everything to session
+    session.questions.push({ 
+      question, 
+      answer,
+      videoPath: videoFile.path,
+      score,
+      signal,
+      feedback
+    });
+
+    session.currentState = nextState;
+    session.stateCounters = {
+      followups: engine.tranistion.followups,
+      deepdives: engine.tranistion.deepdives
+    };
+
+    await session.save();
+
+    res.json({
+      success: true,
+      nextState: nextState,
+      transcript: answer,
+      evaluation: { score, signal, feedback },
+      videoPath: videoFile.path,
+      language: transcriptionResult.language,
+      data: session
+    });
+
+  } catch (error) {
+    console.error('❌ Video Q&A error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 export {
   createSession,
   getSessions,
@@ -528,6 +662,7 @@ export {
   startSession,
   completeSession,
   addQuestionAnswer,
+  addVideoQuestionAnswer,
   getNextQuestion,
   deleteSession,
   uploadVideo,

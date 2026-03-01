@@ -9,6 +9,7 @@ import {
   startSession,
   completeSession,
   addQuestionAnswer,
+  addVideoQuestionAnswer,
   getNextQuestion,
   deleteSession,
   uploadVideo,
@@ -16,11 +17,13 @@ import {
 } from '../controllers/interviewController.js';
 import { protect } from '../middleware/auth.js';
 
-// Multer config for video upload
+// Multer config for video and audio upload
 const videoStorage = multer.diskStorage({
   destination: 'uploads/videos/',
   filename: (req, file, cb) => {
-    cb(null, `interview-${Date.now()}.webm`);
+    const prefix = file.fieldname === 'audio' ? 'audio' : 'interview';
+    const extension = file.fieldname === 'audio' ? '.wav' : '.webm';
+    cb(null, `${prefix}-${Date.now()}${extension}`);
   }
 });
 
@@ -28,10 +31,10 @@ const videoUpload = multer({
   storage: videoStorage,
   limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('video/')) {
+    if (file.mimetype.startsWith('video/') || file.mimetype.startsWith('audio/')) {
       cb(null, true);
     } else {
-      cb(new Error('Only video files are allowed'));
+      cb(new Error('Only video and audio files are allowed'));
     }
   }
 });
@@ -53,6 +56,10 @@ router.put('/session/:id/complete', completeSession);
 // Question generation and Q&A
 router.get('/session/:id/next-question', getNextQuestion);
 router.post('/session/:id/qa', addQuestionAnswer);
+router.post('/session/:id/qa-video', videoUpload.fields([
+  { name: 'video', maxCount: 1 },
+  { name: 'audio', maxCount: 1 }
+]), addVideoQuestionAnswer);
 
 // Video upload
 router.post('/session/:id/upload-video', videoUpload.single('video'), uploadVideo);

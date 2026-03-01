@@ -15,6 +15,7 @@ from resume_parsing.llm.hf_llm import HuggingFaceLLM
 from resume_parsing.llm.llm_extract import extract_structured_resume
 from resume_parsing.llm.generate_question import generate_question
 from resume_parsing.llm.evaluate_answer import evaluate_answer
+from stt.stt_service import get_stt_service
 
 # Load environment variables
 load_dotenv()
@@ -32,12 +33,23 @@ app.add_middleware(
 
 # Initialize LLM once
 llm = None
+stt = None
 
 def get_llm():
     global llm
     if llm is None:
         llm = HuggingFaceLLM()
     return llm
+
+def get_stt():
+    global stt
+    if stt is None:
+        # Use 'small' model for better accuracy (base -> small -> medium -> large)
+        # Options: 'tiny', 'base', 'small', 'medium', 'large'
+        # 'small' is ~2x better than 'base' with moderate speed tradeoff
+        stt = get_stt_service('whisper_local', model_size='base')
+        print(f"🎤 Initialized STT: {stt.get_provider_name()}")
+    return stt
 
 # Temp upload directory
 TEMP_UPLOAD_DIR = Path(__file__).parent / "temp_uploads"
@@ -157,6 +169,57 @@ async def evaluate_interview_answer(request: EvaluationRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Answer evaluation failed: {str(e)}")
+
+
+@app.post("/api/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)):
+    """
+    Transcribe audio/video file to text using Whisper STT
+    
+    Supports: mp3, wav, m4a, webm, mp4, avi, etc.
+    """
+    # Validate file
+    if not file:
+        raise HTTPException(status_code=400, detail="No file provided")
+    
+    # Save uploaded file temporarily
+    temp_dir = Path("temp_uploads")
+    temp_dir.mkdir(exist_ok=True)
+    
+    file_extension = Path(file.filename).suffix or ".webm"
+    temp_path = temp_dir / f"audio_{Path(file.filename).stem}{file_extension}"
+    
+    try:
+        # Save file
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        print(f"📁 Saved uploaded file: {temp_path.name} ({temp_path.stat().st_size} bytes)")
+        
+        # Get STT service
+        stt_service = get_stt()
+        
+        # Transcribe
+        result = stt_service.transcribe(str(temp_path))
+        
+        print(f"✅ Transcription complete: {len(result['text'])} characters")
+        
+        return {
+            "transcript": result['text'],
+            "language": result['language'],
+            "word_count": len(result['text'].split()),
+            "char_count": len(result['text'])
+        }
+        
+    except Exception as e:
+        print(f"❌ Transcription error: {type(e).__name__}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
+    
+    finally:
+        # Clean up temp file
+        if temp_path.exists():
+            temp_path.unlink()
+            print(f"🗑️  Deleted temp file: {temp_path.name}")
 
 
 if __name__ == "__main__":

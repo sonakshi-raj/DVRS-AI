@@ -55,3 +55,7 @@ urllib3==2.6.2
 uuid_utils==0.12.0
 yarl==1.22.0
 zstandard==0.25.0
+
+# Speech-to-Text (STT) dependencies
+openai-whisper==20231117
+ffmpeg-python==0.2.0

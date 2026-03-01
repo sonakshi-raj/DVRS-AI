@@ -132,6 +132,45 @@ class AIService {
       };
     }
   }
+
+  /**
+   * Transcribe video/audio to text using Whisper AI
+   * @param {string} filePath - Path to video/audio file
+   * @returns {Promise<Object>} Transcription result with text, language, etc.
+   */
+  async transcribeVideo(filePath) {
+    try {
+      const formData = new FormData();
+      formData.append('file', fs.createReadStream(filePath));
+      
+      console.log('🎤 Transcribing video/audio with Whisper...');
+      const response = await axios.post(
+        `${AI_SERVICE_URL}/api/transcribe`,
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders()
+          },
+          timeout: 120000, // 2 minute timeout for transcription
+          family: 4  // Force IPv4
+        }
+      );
+
+      console.log('✅ Transcription complete:', {
+        language: response.data.language,
+        words: response.data.transcript?.split(' ').length || 0
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('❌ Video transcription failed:', error.message);
+      if (error.response) {
+        console.error('   Status:', error.response.status);
+        console.error('   Data:', error.response.data);
+      }
+      throw new Error(`Video transcription failed: ${error.response?.data?.detail || error.message}`);
+    }
+  }
 }
 
 export default new AIService();

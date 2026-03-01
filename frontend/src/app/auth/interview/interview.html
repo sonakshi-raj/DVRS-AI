@@ -185,26 +185,50 @@
         {{ currentQuestion }}
       </p>
 
-      <textarea 
-        [(ngModel)]="currentAnswer"
-        placeholder="Type your answer here..."
-        maxlength="1000"
-        [disabled]="submitting"
-      ></textarea>
+      <!-- Recording status -->
+      <div class="recording-status" *ngIf="!isTranscribing">
+        <div class="status-indicator" [class.recording]="isRecording">
+          <span class="status-dot"></span>
+          <span class="status-text" *ngIf="isRecording">Recording your answer... {{ formatRecordingTime() }}</span>
+          <span class="status-text" *ngIf="!isRecording">Ready to record</span>
+        </div>
+        <p class="instruction">📹 Record your video answer by clicking "Stop & Submit Answer" when ready</p>
+      </div>
 
-      <div class="char-count">
-        {{ currentAnswer.length }} / 1000 characters
+      <!-- Transcription loading state -->
+      <div class="transcribing-state" *ngIf="isTranscribing">
+        <div class="spinner"></div>
+        <p>🎤 Transcribing your answer...</p>
+        <p class="sub-text">This may take a moment</p>
+      </div>
+
+      <!-- Show transcript and evaluation after submission -->
+      <div class="answer-feedback" *ngIf="lastTranscript && !isTranscribing">
+        <h4>📝 Your Answer (Transcript):</h4>
+        <p class="transcript">{{ lastTranscript }}</p>
+        
+        <div class="evaluation" *ngIf="lastEvaluation">
+          <h4>🤖 AI Evaluation:</h4>
+          <div class="eval-score" [class.good]="lastEvaluation.signal === 'GOOD'" 
+               [class.average]="lastEvaluation.signal === 'AVERAGE'"
+               [class.bad]="lastEvaluation.signal === 'BAD'">
+            Score: {{ lastEvaluation.score }}/10 ({{ lastEvaluation.signal }})
+          </div>
+          <p class="eval-feedback">{{ lastEvaluation.feedback }}</p>
+        </div>
+        
+        <p class="next-question-hint">⏳ Preparing next question...</p>
       </div>
 
       <div class="action-buttons">
-        <button class="btn-secondary" routerLink="/home" [disabled]="submitting">
+        <button class="btn-secondary" routerLink="/home" [disabled]="submitting || isTranscribing">
           Exit Interview
         </button>
 
         <button 
           class="btn-warning" 
           (click)="completeInterview()"
-          [disabled]="submitting"
+          [disabled]="submitting || isTranscribing"
         >
           <span *ngIf="!submitting">✓ Complete Interview Now</span>
           <span *ngIf="submitting">Completing...</span>
@@ -213,10 +237,10 @@
         <button 
           class="btn-primary" 
           (click)="submitAnswer()"
-          [disabled]="submitting || !currentAnswer.trim()"
+          [disabled]="!isRecording || submitting || isTranscribing"
         >
-          <span *ngIf="!submitting">Submit & Next</span>
-          <span *ngIf="submitting">Saving...</span>
+          <span *ngIf="!submitting && !isTranscribing">⏹️ Stop & Submit Answer</span>
+          <span *ngIf="submitting || isTranscribing">Processing...</span>
         </button>
       </div>
     </div>
