@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-interview',
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './interview.html',
-  styleUrl: './interview.scss',
+  styleUrls: ['./interview.scss'],
 })
 export class Interview implements OnInit, OnDestroy {
   @ViewChild('videoElement') videoElementRef!: ElementRef<HTMLVideoElement>;
@@ -49,11 +49,27 @@ export class Interview implements OnInit, OnDestroy {
   isTranscribing: boolean = false;
   lastTranscript: string = '';
   lastEvaluation: {
-    score: number;
+    technical_accuracy: number;
+    depth: number;
+    clarity: number;
+    relevance: number;
+    final_score: number;
     signal: string;
     feedback: string;
   } | null = null;
-
+  evaluations: {
+  question: string;
+  transcript: string;
+  evaluation: {
+    technical_accuracy: number;
+    depth: number;
+    clarity: number;
+    relevance: number;
+    final_score: number;
+    signal: string;
+    feedback: string;
+  };
+}[] = [];
   // View mode for completed interviews
   isViewMode: boolean = false;
   
@@ -206,7 +222,7 @@ export class Interview implements OnInit, OnDestroy {
         this.recordedVideoBlob!,
         wavBlob
       ).subscribe({
-        next: (response) => {
+        next: (response: any) => {
           console.log('✅ Video answer processed:', response);
           
           if (response.success && response.data) {
@@ -214,11 +230,17 @@ export class Interview implements OnInit, OnDestroy {
             this.session = response.data;
             
             // Store transcript and evaluation for display (they're at root level)
-            this.lastTranscript = response.transcript || '';
-            this.lastEvaluation = response.evaluation || null;
-            
+            // session already updated from backend
+            this.session = response.data;
+
+            // attach evaluation to LAST answered question
+            if (this.session && this.session.questions.length > 0) {
+              const lastIndex = this.session.questions.length - 1;
+              (this.session.questions[lastIndex] as any).evaluation = response.evaluation;
+              (this.session.questions[lastIndex] as any).transcript = response.transcript;
+            }           
             console.log(`📝 Transcript: "${this.lastTranscript}"`);
-            console.log(`📊 Score: ${this.lastEvaluation?.score}/10, Signal: ${this.lastEvaluation?.signal}`);
+            console.log(`📊 Final Score: ${this.lastEvaluation?.final_score}, Signal: ${this.lastEvaluation?.signal}`);
             
             this.isTranscribing = false;
             this.submitting = false;
@@ -238,8 +260,6 @@ export class Interview implements OnInit, OnDestroy {
               
               // Start recording for next answer after a short delay
               setTimeout(() => {
-                this.lastTranscript = '';
-                this.lastEvaluation = null;
                 this.startRecording();
               }, 2000);
             }

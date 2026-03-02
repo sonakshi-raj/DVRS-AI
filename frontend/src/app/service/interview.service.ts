@@ -2,6 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+/* =======================
+   INTERFACES
+======================= */
+
 export interface InterviewSession {
   _id?: string;
   userId: string;
@@ -10,11 +14,23 @@ export interface InterviewSession {
   jobDescription?: string;
   currentState: 'introduction' | 'resume-based' | 'follow-up' | 'deep-dive' | 'closing' | 'end';
   questions: Array<{
-    question: string;
-    answer: string;
-    timestamp: Date;
-  }>;
-  evaluation: {
+  question: string;
+  answer: string;
+  timestamp: Date;
+
+  transcript?: string;
+
+  evaluation?: {
+    technical_accuracy: number;
+    depth: number;
+    clarity: number;
+    relevance: number;
+    final_score: number;
+    signal: string;
+    feedback: string;
+  };
+}>;
+  evaluation?: {
     overallScore: number;
     confidenceLevel: number;
     dsaLevel: number;
@@ -41,16 +57,25 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+/* =======================
+   SERVICE
+======================= */
+
 @Injectable({
   providedIn: 'root',
 })
 export class InterviewService {
   private baseUrl = 'http://localhost:5002/api/interview';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Create a new interview session
-  createSession(sessionData: { resumeId?: string; jobDescription?: string }): Observable<ApiResponse<InterviewSession>> {
+  /* =======================
+     SESSION APIs
+  ======================= */
+
+  createSession(
+    sessionData: { resumeId?: string; jobDescription?: string }
+  ): Observable<ApiResponse<InterviewSession>> {
     return this.http.post<ApiResponse<InterviewSession>>(
       `${this.baseUrl}/session`,
       sessionData,
@@ -58,7 +83,6 @@ export class InterviewService {
     );
   }
 
-  // Get all interview sessions for logged-in user
   getSessions(): Observable<ApiResponse<InterviewSession[]>> {
     return this.http.get<ApiResponse<InterviewSession[]>>(
       `${this.baseUrl}/sessions`,
@@ -66,7 +90,6 @@ export class InterviewService {
     );
   }
 
-  // Get single interview session by ID
   getSessionById(id: string): Observable<ApiResponse<InterviewSession>> {
     return this.http.get<ApiResponse<InterviewSession>>(
       `${this.baseUrl}/session/${id}`,
@@ -74,8 +97,10 @@ export class InterviewService {
     );
   }
 
-  // Update interview session
-  updateSession(id: string, updateData: Partial<InterviewSession>): Observable<ApiResponse<InterviewSession>> {
+  updateSession(
+    id: string,
+    updateData: Partial<InterviewSession>
+  ): Observable<ApiResponse<InterviewSession>> {
     return this.http.put<ApiResponse<InterviewSession>>(
       `${this.baseUrl}/session/${id}`,
       updateData,
@@ -83,7 +108,6 @@ export class InterviewService {
     );
   }
 
-  // Start interview session
   startSession(id: string): Observable<ApiResponse<InterviewSession>> {
     return this.http.put<ApiResponse<InterviewSession>>(
       `${this.baseUrl}/session/${id}/start`,
@@ -92,7 +116,6 @@ export class InterviewService {
     );
   }
 
-  // Complete interview session
   completeSession(id: string): Observable<ApiResponse<InterviewSession>> {
     return this.http.put<ApiResponse<InterviewSession>>(
       `${this.baseUrl}/session/${id}/complete`,
@@ -101,8 +124,15 @@ export class InterviewService {
     );
   }
 
-  // Add question and answer to session
-  addQuestionAnswer(id: string, question: string, answer: string): Observable<ApiResponse<InterviewSession>> {
+  /* =======================
+     QUESTION APIs
+  ======================= */
+
+  addQuestionAnswer(
+    id: string,
+    question: string,
+    answer: string
+  ): Observable<ApiResponse<InterviewSession>> {
     return this.http.post<ApiResponse<InterviewSession>>(
       `${this.baseUrl}/session/${id}/qa`,
       { question, answer },
@@ -110,13 +140,25 @@ export class InterviewService {
     );
   }
 
-  // Add video question and answer with transcription
-  addVideoQuestionAnswer(id: string, question: string, videoBlob: Blob, audioBlob: Blob): Observable<{
+  /* =======================
+     VIDEO + AUDIO + AI EVAL
+  ======================= */
+
+  addVideoQuestionAnswer(
+    id: string,
+    question: string,
+    videoBlob: Blob,
+    audioBlob: Blob
+  ): Observable<{
     success: boolean;
     nextState: string;
     transcript: string;
     evaluation: {
-      score: number;
+      technical_accuracy: number;
+      depth: number;
+      clarity: number;
+      relevance: number;
+      final_score: number;
       signal: string;
       feedback: string;
     };
@@ -126,7 +168,7 @@ export class InterviewService {
   }> {
     const formData = new FormData();
     formData.append('video', videoBlob, `answer-${Date.now()}.webm`);
-    formData.append('audio', audioBlob, `audio-${Date.now()}.wav`); // WAV extension
+    formData.append('audio', audioBlob, `audio-${Date.now()}.wav`);
     formData.append('question', question);
 
     return this.http.post<{
@@ -134,7 +176,11 @@ export class InterviewService {
       nextState: string;
       transcript: string;
       evaluation: {
-        score: number;
+        technical_accuracy: number;
+        depth: number;
+        clarity: number;
+        relevance: number;
+        final_score: number;
         signal: string;
         feedback: string;
       };
@@ -148,8 +194,13 @@ export class InterviewService {
     );
   }
 
-  // Get next AI-generated question
-  getNextQuestion(id: string): Observable<ApiResponse<{
+  /* =======================
+     AI QUESTION GENERATION
+  ======================= */
+
+  getNextQuestion(
+    id: string
+  ): Observable<ApiResponse<{
     question: string;
     difficulty: string;
     category: string;
@@ -164,28 +215,13 @@ export class InterviewService {
     );
   }
 
-  // Delete interview session
-  deleteSession(id: string): Observable<ApiResponse<{ message: string }>> {
-    return this.http.delete<ApiResponse<{ message: string }>>(
-      `${this.baseUrl}/session/${id}`,
-      { withCredentials: true }
-    );
-  }
+  /* =======================
+     ANALYSIS
+  ======================= */
 
-  // Upload interview video
-  uploadVideo(id: string, videoBlob: Blob): Observable<ApiResponse<{ videoPath: string; size: number }>> {
-    const formData = new FormData();
-    formData.append('video', videoBlob, `interview-${id}.webm`);
-
-    return this.http.post<ApiResponse<{ videoPath: string; size: number }>>(
-      `${this.baseUrl}/session/${id}/upload-video`,
-      formData,
-      { withCredentials: true }
-    );
-  }
-
-  // Analyze interview (mock analysis with dummy scores)
-  analyzeInterview(id: string): Observable<ApiResponse<{
+  analyzeInterview(
+    id: string
+  ): Observable<ApiResponse<{
     facialConfidence: number;
     voiceClarity: number;
     eyeContact: number;
@@ -205,6 +241,17 @@ export class InterviewService {
     }>>(
       `${this.baseUrl}/session/${id}/analyze`,
       {},
+      { withCredentials: true }
+    );
+  }
+
+  /* =======================
+     DELETE
+  ======================= */
+
+  deleteSession(id: string): Observable<ApiResponse<{ message: string }>> {
+    return this.http.delete<ApiResponse<{ message: string }>>(
+      `${this.baseUrl}/session/${id}`,
       { withCredentials: true }
     );
   }

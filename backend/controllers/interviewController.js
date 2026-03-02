@@ -621,13 +621,21 @@ const addVideoQuestionAnswer = async (req, res) => {
     console.log('─────────────────────────────────────\n');
 
     // Step 5: Save everything to session
-    session.questions.push({ 
-      question, 
+    session.questions.push({
+      question,
       answer,
-      videoPath: videoFile.path,
-      score,
-      signal,
-      feedback
+      timestamp: new Date(),
+      transcript: answer,
+      evaluation: {
+        technical_accuracy: evaluation.technical_accuracy,
+        depth: evaluation.depth,
+        clarity: evaluation.clarity,
+        relevance: evaluation.relevance,
+        final_score: evaluation.final_score,
+        signal: signal, 
+        feedback: feedback
+      },
+      videoPath: videoFile.path
     });
 
     session.currentState = nextState;
@@ -642,7 +650,15 @@ const addVideoQuestionAnswer = async (req, res) => {
       success: true,
       nextState: nextState,
       transcript: answer,
-      evaluation: { score, signal, feedback },
+      evaluation: {
+        technical_accuracy: evaluation.technical_accuracy,
+        depth: evaluation.depth,
+        clarity: evaluation.clarity,
+        relevance: evaluation.relevance,
+        final_score: evaluation.final_score,
+        signal: evaluation.signal,
+        feedback: evaluation.feedback
+      },
       videoPath: videoFile.path,
       language: transcriptionResult.language,
       data: session

@@ -28,14 +28,31 @@ const interviewSessionSchema = new mongoose.Schema({
     followups: { type: Number, default: 0 },
     deepdives: { type: Number, default: 0 }
   },
-  questions: [{
-    question: String,
-    answer: String,
+  questions: [
+  {
+    question: { type: String, required: true },
+    answer: { type: String, required: true },
+
+    transcript: { type: String },
+
+    evaluation: {
+      technical_accuracy: { type: Number },
+      depth: { type: Number },
+      clarity: { type: Number },
+      relevance: { type: Number },
+      final_score: { type: Number },
+      signal: { type: String },
+      feedback: { type: String }
+    },
+
+    videoPath: { type: String },
+
     timestamp: {
       type: Date,
       default: Date.now
     }
-  }],
+  }
+],
   evaluation: {
     overallScore: {
       type: Number,

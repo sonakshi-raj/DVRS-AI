@@ -101,7 +101,7 @@
         </div>
         <div class="feedback-text">
           <p *ngIf="latestSession.evaluation?.feedback">
-            {{ latestSession.evaluation.feedback }}
+            {{ latestSession.evaluation?.feedback }}
           </p>
           <p *ngIf="!latestSession.evaluation?.feedback" class="no-feedback">
             AI feedback will be generated after interview evaluation.
