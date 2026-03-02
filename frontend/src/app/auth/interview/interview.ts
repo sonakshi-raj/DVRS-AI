@@ -422,7 +422,11 @@ export class Interview implements OnInit, OnDestroy {
       // Connect stream to video element (with retry if not ready)
       const attachStream = () => {
         if (this.videoElementRef?.nativeElement) {
-          this.videoElementRef.nativeElement.srcObject = this.mediaStream;
+          const videoTracks = this.mediaStream!.getVideoTracks();
+          const videoOnlyStream = new MediaStream(videoTracks);
+
+          this.videoElementRef.nativeElement.srcObject = videoOnlyStream;
+          this.videoElementRef.nativeElement.muted = true;
           this.cameraError = '';
           this.cdr.detectChanges();
           
