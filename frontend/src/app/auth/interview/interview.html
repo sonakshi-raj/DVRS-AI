@@ -126,9 +126,6 @@
 
           <p><strong>Your Answer:</strong> {{ qa.answer }}</p>
 
-          <p *ngIf="qa.transcript">
-            <strong>Transcript:</strong> {{ qa.transcript }}
-          </p>
 
           <!-- AI Evaluation -->
           <div *ngIf="qa.evaluation" class="evaluation-box">
@@ -136,10 +133,10 @@
             <p><strong>Signal:</strong> {{ qa.evaluation.signal }}</p>
 
             <div class="score-grid">
-              <span>Technical Accuracy: {{ qa.evaluation.technical_accuracy }}/5</span>
-              <span>Depth: {{ qa.evaluation.depth }}/5</span>
-              <span>Clarity: {{ qa.evaluation.clarity }}/5</span>
-              <span>Relevance: {{ qa.evaluation.relevance }}/5</span>
+              <span>Technical Accuracy: {{ qa.evaluation.technical_accuracy }}/10</span>
+              <span>Depth: {{ qa.evaluation.depth }}/10</span>
+              <span>Clarity: {{ qa.evaluation.clarity }}/10</span>
+              <span>Relevance: {{ qa.evaluation.relevance }}/10</span>
             </div>
 
             <p class="feedback">

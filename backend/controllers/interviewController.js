@@ -249,17 +249,15 @@ if (session.resumeId) {
 }
 
 // AI-powered answer evaluation
-console.log('📤 Calling AI evaluation service...');
-const evaluation = await aiService.evaluateAnswer({
+const aiResponse = await aiService.evaluateAnswer({
   question,
   answer,
   state: session.currentState,
   resumeData
 });
 
-const score = evaluation.final_score;
-const signal = evaluation.signal;
-const feedback = evaluation.feedback;
+const evalData = aiResponse.evaluation;
+
 
 // Log evaluation results for debugging
 console.log('\n🤖 AI Answer Evaluation:');
@@ -602,17 +600,16 @@ const addVideoQuestionAnswer = async (req, res) => {
       state: session.currentState,
       resumeData
     });
-
+    const evalData = evaluation.evaluation;
     const score = evaluation.final_score;
     const signal = evaluation.signal;
     const feedback = evaluation.feedback;
 
     // Log evaluation results
     console.log('\n🤖 AI Answer Evaluation:');
-    console.log(`   Score: ${score}/10`);
-    console.log(`   Signal: ${signal}`);
-    console.log(`   Feedback: ${feedback}`);
-    console.log(`   Current State: ${session.currentState}`);
+    console.log(`   Score: ${evalData.final_score}/10`);
+    console.log(`   Signal: ${evalData.signal}`);
+    console.log(`   Feedback: ${evalData.feedback}`);
 
     // Step 4: Get next state
     const nextState = engine.process(signal);
@@ -624,20 +621,19 @@ const addVideoQuestionAnswer = async (req, res) => {
     session.questions.push({
       question,
       answer,
-      timestamp: new Date(),
       transcript: answer,
       evaluation: {
-        technical_accuracy: evaluation.technical_accuracy,
-        depth: evaluation.depth,
-        clarity: evaluation.clarity,
-        relevance: evaluation.relevance,
-        final_score: evaluation.final_score,
-        signal: signal, 
-        feedback: feedback
+        technical_accuracy: evalData.technical_accuracy,
+        depth: evalData.depth,
+        clarity: evalData.clarity,
+        relevance: evalData.relevance,
+        final_score: evalData.final_score,
+        signal: evalData.signal,
+        feedback: evalData.feedback
       },
-      videoPath: videoFile.path
+      videoPath: videoFile.path,
+      timestamp: new Date()
     });
-
     session.currentState = nextState;
     session.stateCounters = {
       followups: engine.tranistion.followups,
