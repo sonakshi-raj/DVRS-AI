@@ -6,6 +6,15 @@ import json
 import re
 from typing import Dict, Optional
 
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+if not token:
+    raise RuntimeError("HUGGINGFACEHUB_API_TOKEN not set")
 
 def load_evaluation_prompt() -> str:
     """Load the answer evaluation prompt template"""
