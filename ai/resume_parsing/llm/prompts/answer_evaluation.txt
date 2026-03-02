@@ -30,7 +30,7 @@ SCORING RUBRIC (each category 1-10):
 
 Return ONLY a valid JSON object in this exact format:
 
-{
+{{
   "technical_accuracy": int,
   "depth": int,
   "clarity": int,
@@ -38,7 +38,7 @@ Return ONLY a valid JSON object in this exact format:
   "final_score": float,
   "signal": "GOOD | AVERAGE | BAD",
   "feedback": "Concise explanation of strengths and weaknesses"
-}
+}}
 
 Final score must be the weighted average:
 technical_accuracy (40%)
