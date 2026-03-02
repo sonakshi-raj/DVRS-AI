@@ -18,13 +18,13 @@
       [class.active]="resumeMode === 'existing'"
       (click)="switchMode('existing')"
       [disabled]="resumes.length === 0">
-      📁 Use Existing Resume ({{ resumes.length }})
+      Use Existing Resume ({{ resumes.length }})
     </button>
     <button 
       class="mode-btn" 
       [class.active]="resumeMode === 'new'"
       (click)="switchMode('new')">
-      📤 Upload New Resume
+      Upload New Resume
     </button>
   </div>
 
@@ -39,7 +39,7 @@
     <p class="subtitle">Choose from your previously uploaded resumes</p>
 
     <div *ngIf="resumes.length === 0" class="empty-message">
-      <p>📄 You haven't uploaded any resumes yet.</p>
+      <p>You haven't uploaded any resumes yet.</p>
       <p>Click "Upload New Resume" to get started!</p>
     </div>
 
@@ -58,7 +58,7 @@
           <div class="resume-meta">
             <span class="category">{{ getCategoryDisplay(resume.category) }}</span>
             <span class="date">{{ formatDate(resume.uploadedAt) }}</span>
-            <span class="status" *ngIf="resume.isParsed">✅ Parsed</span>
+            <span class="status" *ngIf="resume.isParsed">Parsed</span>
           </div>
         </div>
       </div>

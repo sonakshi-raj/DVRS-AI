@@ -21,13 +21,13 @@
       class="tab-btn" 
       [class.active]="activeTab === 'interviews'"
       (click)="switchTab('interviews')">
-      📊 Interviews
+      Interviews
     </button>
     <button 
       class="tab-btn" 
       [class.active]="activeTab === 'resumes'"
       (click)="switchTab('resumes')">
-      📄 My Resumes
+      My Resumes
     </button>
   </div>
 
@@ -115,7 +115,7 @@
       <h2>Interview History</h2>
       
       <div *ngIf="sessions.length === 0" class="empty-state">
-        <p>🎯 No interviews yet</p>
+        <p>No interviews yet</p>
         <p class="empty-subtitle">Start your first interview to track your progress</p>
         <button class="btn-primary" (click)="startNewInterview()">
           Start Interview
@@ -165,7 +165,7 @@
         
         <!-- Upload Resume Form -->
         <div class="upload-resume-card">
-          <h3>📤 Upload New Resume</h3>
+          <h3>Upload New Resume</h3>
           <div class="upload-form">
             <div class="form-row">
               <div class="form-group">
@@ -232,7 +232,7 @@
 
         <!-- Empty State -->
         <div *ngIf="!resumesLoading && resumes.length === 0" class="empty-state">
-          <p>📄 No resumes uploaded yet</p>
+          <p>No resumes uploaded yet</p>
           <p class="empty-subtitle">Upload your resume to get started with interviews</p>
         </div>
 
@@ -262,8 +262,8 @@
               </div>
               <div class="resume-actions">
                 <div *ngIf="editingResumeId !== resume._id">
-                  <button class="btn-icon" (click)="startEditResume(resume)" title="Edit">✏️</button>
-                  <button class="btn-icon" (click)="deleteResume(resume._id, resume.displayName)" title="Delete">🗑️</button>
+                  <button class="btn-icon" (click)="startEditResume(resume)" title="Edit">Edit</button>
+                  <button class="btn-icon" (click)="deleteResume(resume._id, resume.displayName)" title="Delete">Delete</button>
                 </div>
                 <div *ngIf="editingResumeId === resume._id">
                   <button class="btn-save" (click)="saveResumeEdit(resume._id)">Save</button>
@@ -288,8 +288,8 @@
               <div class="detail-item">
                 <span class="detail-label">Status:</span>
                 <span class="detail-value">
-                  <span *ngIf="resume.isParsed" class="status-success">✅ Parsed</span>
-                  <span *ngIf="!resume.isParsed" class="status-warning">⚠️ Not Parsed</span>
+                  <span *ngIf="resume.isParsed" class="status-success">Parsed</span>
+                  <span *ngIf="!resume.isParsed" class="status-warning">Not Parsed</span>
                 </span>
               </div>
             </div>
