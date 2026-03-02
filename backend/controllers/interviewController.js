@@ -257,7 +257,9 @@ const evaluation = await aiService.evaluateAnswer({
   resumeData
 });
 
-const { score, signal, feedback } = evaluation;
+const score = evaluation.final_score;
+const signal = evaluation.signal;
+const feedback = evaluation.feedback;
 
 // Log evaluation results for debugging
 console.log('\n🤖 AI Answer Evaluation:');
@@ -563,14 +565,13 @@ const addVideoQuestionAnswer = async (req, res) => {
     }
 
     // Step 1: Transcribe the AUDIO using Whisper (not video - no FFmpeg needed!)
-    console.log('🎬 Processing video answer...');
+    console.log('Processing video answer...');
     console.log(`   Video file: ${videoFile.filename} (${(videoFile.size / 1024 / 1024).toFixed(2)} MB)`);
     console.log(`   Audio file: ${audioFile.filename} (${(audioFile.size / 1024).toFixed(2)} KB) - WAV format`);
     
     const transcriptionResult = await aiService.transcribeVideo(audioFile.path);
     const answer = transcriptionResult.transcript;
-
-    console.log('✅ Transcription: "${answer.substring(0, 100)}..."');
+    console.log(`Transcription: "${answer.substring(0, 100)}..."`);
 
     // Step 2: Interview engine logic (same as text-based)
     const engine = new InterviewEngine();
@@ -602,7 +603,9 @@ const addVideoQuestionAnswer = async (req, res) => {
       resumeData
     });
 
-    const { score, signal, feedback } = evaluation;
+    const score = evaluation.final_score;
+    const signal = evaluation.signal;
+    const feedback = evaluation.feedback;
 
     // Log evaluation results
     console.log('\n🤖 AI Answer Evaluation:');

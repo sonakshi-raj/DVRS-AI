@@ -114,9 +114,9 @@ class WhisperLocalSTT(STTService):
                     audio_data,
                     fp16=False,
                     temperature=0,
-                    beam_size=5,
-                    best_of=5
-                )
+                    beam_size=1,
+                    best_of=1
+            )
 
             # ===============================
             # OTHER FORMATS (requires FFmpeg)

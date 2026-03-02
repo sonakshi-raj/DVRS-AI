@@ -1,6 +1,8 @@
 """
 Minimal FastAPI server - Resume parsing and question generation
 """
+from urllib import request
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -152,7 +154,8 @@ async def evaluate_interview_answer(request: EvaluationRequest):
     """
     try:
         llm_instance = get_llm()
-        
+        print("DEBUG QUESTION:", request.question)
+        print("DEBUG ANSWER:", request.answer)
         evaluation_result = evaluate_answer(
             llm=llm_instance,
             question=request.question,
@@ -160,15 +163,15 @@ async def evaluate_interview_answer(request: EvaluationRequest):
             state=request.state,
             resume_data=request.resume_data
         )
-        
+        print("DEBUG EVALUATION RESULT:", evaluation_result)
         return {
             "success": True,
-            "data": evaluation_result,
-            "message": "Answer evaluated successfully"
+            "evaluation": evaluation_result
         }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Answer evaluation failed: {str(e)}")
+        print("🔥 FULL ERROR:", repr(e))
+        raise
 
 
 @app.post("/api/transcribe")
