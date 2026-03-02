@@ -7,6 +7,7 @@ import re
 from typing import Dict, Optional
 
 import os
+from urllib import response
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -84,11 +85,15 @@ def evaluate_answer(
         response = content.strip()
 
         # Parse JSON response
-        json_match = re.search(r'\{[^}]+\}', response, re.DOTALL)
-        if json_match:
-            result = json.loads(json_match.group())
-        else:
+        # Parse JSON response safely
+        try:
             result = json.loads(response)
+        except json.JSONDecodeError:
+            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            if json_match:
+                result = json.loads(json_match.group())
+            else:
+                raise ValueError("No valid JSON found in LLM response")
 
         # Extract rubric scores
         technical = int(result.get("technical_accuracy", 5))
