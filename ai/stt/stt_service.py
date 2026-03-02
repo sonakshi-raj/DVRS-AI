@@ -39,18 +39,17 @@ class WhisperLocalSTT(STTService):
     Local Whisper implementation (FREE)
     Uses OpenAI's open-source Whisper model running locally
     """
-    
-    def __init__(self, model_size: str = "base"):
+
+    def __init__(self, model_size: str = "small"):   # 🔥 changed from "base" to "small"
         """
         Initialize Whisper STT
         
         Args:
             model_size: Whisper model size (tiny, base, small, medium, large)
-                       'base' is a good balance of speed and accuracy
         """
         self.model_size = model_size
         self._model = None
-        
+
     def _load_model(self):
         """Lazy load the Whisper model (loads only when first used)"""
         if self._model is None:
@@ -64,62 +63,64 @@ class WhisperLocalSTT(STTService):
                     "Whisper not installed. Install with: pip install openai-whisper"
                 )
         return self._model
-    
+
     def transcribe(self, audio_file_path: str) -> dict:
         """
         Transcribe audio using local Whisper model
-        
-        Args:
-            audio_file_path: Path to audio/video file
-            
-        Returns:
-            dict with text, language, and confidence
         """
-        # Validate file exists
+        from pathlib import Path
+        import numpy as np
+
         audio_path = Path(audio_file_path)
+
         if not audio_path.exists():
             raise FileNotFoundError(f"Audio file not found: {audio_file_path}")
-        
-        # Load model
+
         model = self._load_model()
-        
-        # Transcribe
+
         print(f"🎤 Transcribing audio: {audio_path.name} ({audio_path.stat().st_size} bytes)")
-        
+        print(f"   Using Whisper model: {self.model_size}")
+
         try:
-            # For WAV files, load manually to avoid FFmpeg dependency
+            # ===============================
+            # WAV FILE HANDLING (no FFmpeg)
+            # ===============================
             if audio_path.suffix.lower() in ['.wav', '.wave']:
-                import numpy as np
-                try:
-                    # Try using scipy.io.wavfile (no FFmpeg needed)
-                    from scipy.io import wavfile
-                    sample_rate, audio_data = wavfile.read(str(audio_path))
-                    
-                    # Convert to mono if stereo
-                    if len(audio_data.shape) > 1:
-                        audio_data = audio_data.mean(axis=1)
-                    
-                    # Convert to float32 and normalize to [-1, 1]
-                    if audio_data.dtype == np.int16:
-                        audio_data = audio_data.astype(np.float32) / 32768.0
-                    elif audio_data.dtype == np.int32:
-                        audio_data = audio_data.astype(np.float32) / 2147483648.0
-                    
-                    # Resample to 16kHz if needed (Whisper expects 16kHz)
-                    if sample_rate != 16000:
-                        print(f"   Resampling from {sample_rate}Hz to 16000Hz...")
-                        from scipy import signal
-                        num_samples = int(len(audio_data) * 16000 / sample_rate)
-                        audio_data = signal.resample(audio_data, num_samples)
-                    
-                    print(f"   Audio loaded: {len(audio_data)/16000:.2f} seconds")
-                    
-                    # Transcribe with the audio array
-                    result = model.transcribe(audio_data, fp16=False)
-                    
-                except ImportError:
-                    print("   scipy not available, falling back to Whisper's loader (requires FFmpeg)")
-                    result = model.transcribe(str(audio_path))
+                from scipy.io import wavfile
+                from scipy import signal
+
+                sample_rate, audio_data = wavfile.read(str(audio_path))
+
+                # Convert stereo → mono
+                if len(audio_data.shape) > 1:
+                    audio_data = audio_data.mean(axis=1)
+
+                # Normalize
+                if audio_data.dtype == np.int16:
+                    audio_data = audio_data.astype(np.float32) / 32768.0
+                elif audio_data.dtype == np.int32:
+                    audio_data = audio_data.astype(np.float32) / 2147483648.0
+
+                # Resample to 16kHz
+                if sample_rate != 16000:
+                    print(f"   Resampling from {sample_rate}Hz to 16000Hz...")
+                    num_samples = int(len(audio_data) * 16000 / sample_rate)
+                    audio_data = signal.resample(audio_data, num_samples)
+
+                print(f"   Audio loaded: {len(audio_data)/16000:.2f} seconds")
+
+                # 🔥 IMPROVED TRANSCRIPTION SETTINGS
+                result = model.transcribe(
+                    audio_data,
+                    fp16=False,
+                    temperature=0,
+                    beam_size=5,
+                    best_of=5
+                )
+
+            # ===============================
+            # OTHER FORMATS (requires FFmpeg)
+            # ===============================
             else:
                 # For other formats, use Whisper's built-in loader (requires FFmpeg)
                 result = model.transcribe(
@@ -133,21 +134,21 @@ class WhisperLocalSTT(STTService):
             return {
                 'text': result['text'].strip(),
                 'language': result.get('language', 'unknown'),
-                'confidence': None  # Whisper doesn't provide confidence scores
+                'confidence': None
             }
+
         except Exception as e:
             error_msg = str(e)
             print(f"❌ Whisper transcription failed: {error_msg}")
-            
-            # Check if it's an ffmpeg issue
+
             if "ffmpeg" in error_msg.lower() or "WinError 2" in error_msg:
                 raise RuntimeError(
                     "FFmpeg is required to process this audio format. "
-                    "Install FFmpeg and add it to your system PATH, or use a different audio format (WAV recommended)."
+                    "Install FFmpeg and add it to your system PATH."
                 )
             else:
                 raise RuntimeError(f"Whisper transcription failed: {error_msg}")
-    
+
     def get_provider_name(self) -> str:
         return f"Whisper Local ({self.model_size})"
 

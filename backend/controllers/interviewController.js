@@ -570,7 +570,7 @@ const addVideoQuestionAnswer = async (req, res) => {
     const transcriptionResult = await aiService.transcribeVideo(audioFile.path);
     const answer = transcriptionResult.transcript;
 
-    console.log(`✅ Transcription: "${answer.substring(0, 100)}..."`);
+    console.log('✅ Transcription: "${answer.substring(0, 100)}..."');
 
     // Step 2: Interview engine logic (same as text-based)
     const engine = new InterviewEngine();
