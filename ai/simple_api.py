@@ -47,8 +47,8 @@ def get_stt():
         # Use 'small' model for better accuracy (base -> small -> medium -> large)
         # Options: 'tiny', 'base', 'small', 'medium', 'large'
         # 'small' is ~2x better than 'base' with moderate speed tradeoff
-        stt = get_stt_service('whisper_local', model_size='base')
-        print(f"🎤 Initialized STT: {stt.get_provider_name()}")
+        stt = get_stt_service('whisper_local', model_size='small')
+        print(f"Initialized STT: {stt.get_provider_name()}")
     return stt
 
 # Temp upload directory
@@ -203,7 +203,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
         result = stt_service.transcribe(str(temp_path))
         
         print(f"✅ Transcription complete: {len(result['text'])} characters")
-        
+        print("📝 Transcribed text:", result['text'])
         return {
             "transcript": result['text'],
             "language": result['language'],
@@ -216,6 +216,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
     
     finally:
+        # pass
         # Clean up temp file
         if temp_path.exists():
             temp_path.unlink()

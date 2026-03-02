@@ -122,7 +122,13 @@ class WhisperLocalSTT(STTService):
                     result = model.transcribe(str(audio_path))
             else:
                 # For other formats, use Whisper's built-in loader (requires FFmpeg)
-                result = model.transcribe(str(audio_path))
+                result = model.transcribe(
+                    audio_path,
+                    language="en",
+                    fp16=False,
+                    temperature=0,
+                    verbose=True
+            )
             
             return {
                 'text': result['text'].strip(),
