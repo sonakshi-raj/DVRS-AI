@@ -148,140 +148,80 @@
         </div>
       </div>
     </div>
-
     <!-- ACTIVE INTERVIEW MODE -->
-    <div *ngIf="!isViewMode">
-      <!-- PROGRESS HEADER -->
-      <div class="progress-header">
-        <div class="progress-bar-container">
-          <div class="progress-bar" [style.width.%]="progressPercentage"></div>
-        </div>
-        <p class="progress-text">Interview Stage: {{ session?.currentState }}</p>
-        <p class="progress-text">Status: {{ session?.status }}</p>
-      </div>
+    <div *ngIf="!isViewMode" class="meet-layout">
 
-      <!-- VIDEO PREVIEW -->
-      <div class="video-section">
-        <div class="video-container">
+      <!-- TOP BAR -->
+      <!-- QUESTION CARD -->
+<div class="meet-question-card"
+     *ngIf="!fetchingQuestion && currentQuestionData">
+
+  <div class="question-meta">
+    <span class="badge badge-{{ currentDifficulty }}">
+      {{ currentDifficulty }}
+    </span>
+    <span class="badge badge-category">
+      {{ currentCategory }}
+    </span>
+  </div>
+
+  <p class="question">
+    {{ currentQuestion }}
+  </p>
+</div>
+
+      <!-- CENTER VIDEO AREA -->
+      <div class="meet-center">
+
+        <div class="video-container meet-video-wrapper">
           <video #videoElement autoplay muted playsinline class="video-preview"></video>
+
           <div class="video-overlay" *ngIf="!mediaStream && !cameraError">
             <div class="spinner"></div>
             <p>Initializing camera...</p>
           </div>
+
           <div class="camera-error" *ngIf="cameraError">
             <p>⚠️ {{ cameraError }}</p>
           </div>
-          <!-- Recording indicator -->
+
           <div class="recording-indicator" *ngIf="isRecording">
             <span class="red-dot"></span>
-            <span class="rec-text">RECORDING</span>
+            <span class="rec-text">RECORDING {{ formatRecordingTime() }}</span>
           </div>
         </div>
+
       </div>
 
-      <!-- LOADING QUESTION STATE -->
-      <div class="loading" *ngIf="fetchingQuestion">
-        <div class="spinner"></div>
-        <p>Generating your next question...</p>
+      <!-- QUESTION OVERLAY CARD -->
+      
+
+      <!-- BOTTOM CONTROL BAR -->
+      <div class="meet-controls">
+
+        <button class="control-btn stop-btn" (click)="submitAnswer()"
+          [disabled]="!isRecording || submitting || isTranscribing">
+          ⏹ Stop & Submit
+        </button>
+
+        <button class="control-btn complete-btn" (click)="completeInterview()"
+          [disabled]="submitting || isTranscribing">
+          ✓ Complete
+        </button>
+
+        <button class="control-btn exit-btn" routerLink="/home" [disabled]="submitting || isTranscribing">
+          🚪 Exit
+        </button>
+
       </div>
 
-      <!-- QUESTION CARD -->
-      <div class="question-card" *ngIf="!fetchingQuestion && currentQuestionData">
-        <!-- Question metadata badges -->
-        <div class="question-meta">
-          <span class="badge badge-{{ currentDifficulty }}">{{ currentDifficulty }}</span>
-          <span class="badge badge-category">{{ currentCategory }}</span>
-        </div>
-
-        <p class="question">
-          {{ currentQuestion }}
-        </p>
-
-        <!-- Recording status -->
-        <div class="recording-status" *ngIf="!isTranscribing">
-          <div class="status-indicator" [class.recording]="isRecording">
-            <span class="status-dot"></span>
-            <span class="status-text" *ngIf="isRecording">Recording your answer... {{ formatRecordingTime() }}</span>
-            <span class="status-text" *ngIf="!isRecording">Ready to record</span>
-          </div>
-          <p class="instruction">📹 Record your video answer by clicking "Stop & Submit Answer" when ready</p>
-        </div>
-
-        <!-- Transcription loading state -->
-        <div class="transcribing-state" *ngIf="isTranscribing">
-          <div class="spinner"></div>
-          <p>🎤 Transcribing your answer...</p>
-          <p class="sub-text">This may take a moment</p>
-        </div>
-
-        <!-- Show transcript and evaluation after submission -->
-        <div class="answer-feedback" *ngIf="lastTranscript && !isTranscribing">
-          <h4>📝 Your Answer (Transcript):</h4>
-          <p class="transcript">{{ lastTranscript }}</p>
-
-          <!-- AI Evaluation Metrics -->
-          <div *ngIf="lastEvaluation" style="margin-top: 16px; background:#1e1e1e; padding:16px; border-radius:10px;">
-
-            <h4>🤖 AI Evaluation</h4>
-
-            <p>
-              <strong>Final Score:</strong>
-              {{ lastEvaluation.final_score }}
-            </p>
-
-            <p>
-              <strong>Signal:</strong>
-              {{ lastEvaluation.signal }}
-            </p>
-
-            <p>
-              <strong>Technical Accuracy:</strong>
-              {{ lastEvaluation.technical_accuracy }}/5
-            </p>
-
-            <p>
-              <strong>Depth:</strong>
-              {{ lastEvaluation.depth }}/5
-            </p>
-
-            <p>
-              <strong>Clarity:</strong>
-              {{ lastEvaluation.clarity }}/5
-            </p>
-
-            <p>
-              <strong>Relevance:</strong>
-              {{ lastEvaluation.relevance }}/5
-            </p>
-
-            <p>
-              <strong>Feedback:</strong><br>
-              {{ lastEvaluation.feedback }}
-            </p>
-
-          </div>
-
-          <p class="next-question-hint">⏳ Preparing next question...</p>
-        </div>
-
-        <div class="action-buttons">
-          <button class="btn-secondary" routerLink="/home" [disabled]="submitting || isTranscribing">
-            Exit Interview
-          </button>
-
-          <button class="btn-warning" (click)="completeInterview()" [disabled]="submitting || isTranscribing">
-            <span *ngIf="!submitting">✓ Complete Interview Now</span>
-            <span *ngIf="submitting">Completing...</span>
-          </button>
-
-          <button class="btn-primary" (click)="submitAnswer()"
-            [disabled]="!isRecording || submitting || isTranscribing">
-            <span *ngIf="!submitting && !isTranscribing">⏹️ Stop & Submit Answer</span>
-            <span *ngIf="submitting || isTranscribing">Processing...</span>
-          </button>
-        </div>
-      </div>
     </div>
-    <!-- END ACTIVE INTERVIEW MODE -->
-  </div>
+    <!-- LOADING QUESTION STATE -->
+    <div class="loading" *ngIf="fetchingQuestion">
+      <div class="spinner"></div>
+      <p>Generating your next question...</p>
+    </div>
+
+    <!-- QUESTION CARD -->
+  <!-- END ACTIVE INTERVIEW MODE -->
 </div>

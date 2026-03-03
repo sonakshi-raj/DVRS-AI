@@ -1069,3 +1069,125 @@ textarea:focus {
     transform: translateY(0);
   }
 }
+/*/* ==============================
+   GOOGLE MEET STYLE (FIXED)
+================================*/
+
+.meet-layout {
+  width: 100%;
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* QUESTION CARD - TOP */
+.meet-question-card {
+  width: 100%;
+  max-width: 1000px;
+  background: rgba(32, 33, 36, 0.95);
+  padding: 0.8rem 1.2rem;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.08);
+  animation: slideIn 0.3s ease;
+}
+
+.meet-question-card .question {
+  font-size: 1.1rem;
+  margin-top: 0.8rem;
+}
+
+/* VIDEO - CENTER */
+.meet-center {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.meet-video-wrapper {
+  width: 100%;
+  max-width: 1100px;
+  height: 60vh;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+}
+
+/* CONTROLS - BOTTOM */
+.meet-controls {
+  background: rgba(32, 33, 36, 0.95);
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: auto;
+}
+
+/* Buttons */
+.control-btn {
+  padding: 0.8rem 1.8rem;
+  border-radius: 50px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+  color: white;
+}
+
+.stop-btn {
+  background: #ea4335;
+}
+
+.stop-btn:hover:not(:disabled) {
+  background: #c5221f;
+  transform: scale(1.05);
+}
+
+.complete-btn {
+  background: #34a853;
+}
+
+.complete-btn:hover:not(:disabled) {
+  background: #1e8e3e;
+  transform: scale(1.05);
+}
+
+.exit-btn {
+  background: #5f6368;
+}
+
+.exit-btn:hover:not(:disabled) {
+  background: #3c4043;
+  transform: scale(1.05);
+}
+
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+
+  .meet-video-wrapper {
+    height: 45vh;
+  }
+
+  .meet-question-card {
+    width: 90%;
+    top: 100px;
+  }
+
+  .meet-controls {
+    flex-direction: column;
+    border-radius: 20px;
+  }
+
+  .control-btn {
+    width: 100%;
+  }
+}
